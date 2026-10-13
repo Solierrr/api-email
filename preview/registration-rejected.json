@@ -1,0 +1,10 @@
+{
+  "template": "registration-rejected",
+  "locale": "pt-BR",
+  "to": "carlos@example.com",
+  "data": {
+    "name": "Carlos",
+    "reason": "O certificado profissional enviado está ilegível. Consulte os detalhes da análise do seu cadastro.",
+    "actionUrl": "http://localhost:5173/pt-BR"
+  }
+}

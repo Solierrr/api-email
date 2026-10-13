@@ -1,0 +1,9 @@
+{
+  "template": "email-verification",
+  "locale": "pt-BR",
+  "to": "david@example.com",
+  "data": {
+    "name": "David",
+    "actionUrl": "http://localhost:5173/pt-BR/verificar-email?token=preview-verification"
+  }
+}

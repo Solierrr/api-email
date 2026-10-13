@@ -1,0 +1,10 @@
+{
+  "template": "company-invitation",
+  "locale": "pt-BR",
+  "to": "david@example.com",
+  "data": {
+    "name": "David",
+    "companyName": "Solaria Energia",
+    "actionUrl": "http://localhost:5173/pt-BR/convite?token=preview-invitation"
+  }
+}

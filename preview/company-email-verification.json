@@ -1,0 +1,10 @@
+{
+  "template": "company-email-verification",
+  "locale": "pt-BR",
+  "to": "administracao@example.com",
+  "data": {
+    "name": "Fernanda",
+    "companyName": "Solaria Energia",
+    "actionUrl": "http://localhost:5173/pt-BR/verificar-email?token=preview-company-email"
+  }
+}

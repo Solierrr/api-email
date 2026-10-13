@@ -1,0 +1,12 @@
+{
+  "template": "solar-model-approved",
+  "locale": "pt-BR",
+  "to": "fornecedor@example.com",
+  "data": {
+    "name": "Mariana",
+    "modelName": "Solaria Mono 550 W",
+    "modelManufacturer": "Solaria",
+    "modelPowerWatts": 550,
+    "actionUrl": "http://localhost:5173/pt-BR"
+  }
+}
