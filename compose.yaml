@@ -1,0 +1,20 @@
+services:
+  api-email:
+    build: .
+    ports:
+      - "127.0.0.1:8083:8083"
+    environment:
+      APP_ENV: dev
+      EMAIL_API_KEY: ${EMAIL_API_KEY:?Configure EMAIL_API_KEY in .env}
+      EMAIL_FROM: noreply@solaria.local
+      EMAIL_ALLOWED_ORIGINS: http://localhost:5173
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_SECURE: "false"
+    depends_on:
+      - mailpit
+  mailpit:
+    image: axllent/mailpit:v1.27.4
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
