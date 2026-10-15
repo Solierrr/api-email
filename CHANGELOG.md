@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/Solierrr/api-email/compare/v0.2.0...v0.3.0) (2026-10-15)
+
+
+### Features
+
+* implement transactional email service ([#2](https://github.com/Solierrr/api-email/issues/2)) ([556bc68](https://github.com/Solierrr/api-email/commit/556bc686036f3c5a06334c68afc2c99dba21315c))
+
 ## [0.2.0](https://github.com/Solierrr/generic-template/compare/v0.1.1...v0.2.0) (2026-10-02)
 
 
