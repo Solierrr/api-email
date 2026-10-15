@@ -6,16 +6,22 @@
 
 [preencha-me]
 
-## Recursos impactados
+## Endpoints afetados
 
-[preencha-me] | Sem impacto relevante
+[preencha-me] | Sem endpoints afetados
 
-## Rollback
+## Banco de Dados
 
-[preencha-me] | Não vem ao caso
+- [ ] Migration
+- [ ] Schema
+- [ ] Seed
 
-## Como validar
+## Como testar
 
-[preencha-me] | Sem validação necessária
+[preencha-me] | Sem testes possíveis
+
+## Evidências
+
+[preencha-me] | Sem evidências visuais
 
 Closes #
