@@ -1,0 +1,14 @@
+name: Environment Status
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  qa:
+    permissions:
+      deployments: write
+    uses: Solierrr/.github/.github/workflows/environment-status.yml@main
+    with:
+      environment: QA
+      check: http
+      url: https://api-email-6swz.onrender.com
