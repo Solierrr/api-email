@@ -1,0 +1,8 @@
+{
+  "template": "user-deletion",
+  "locale": "pt-BR",
+  "to": "david@example.com",
+  "data": {
+    "name": "David"
+  }
+}

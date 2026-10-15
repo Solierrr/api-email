@@ -1,0 +1,36 @@
+{
+  "name": "@solierrr/api-email",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/server.ts",
+    "preview:seed": "node --env-file=.env scripts/seed-preview.mjs",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@solierrr/web-lib": "file:vendor/solierrr-web-lib-0.1.0.tgz",
+    "fastify": "5.12.5",
+    "nodemailer": "10.0.16",
+    "react": "19.3.0",
+    "react-email": "6.11.1",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.1",
+    "@types/nodemailer": "8.0.2",
+    "@types/react": "19.3.0",
+    "prettier": "3.9.9",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  }
+}

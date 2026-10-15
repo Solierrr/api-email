@@ -1,0 +1,9 @@
+{
+  "template": "registration-approved",
+  "locale": "pt-BR",
+  "to": "ana@example.com",
+  "data": {
+    "name": "Ana",
+    "actionUrl": "http://localhost:5173/pt-BR"
+  }
+}

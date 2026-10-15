@@ -1,0 +1,28 @@
+meta {
+  name: POST /emails/preview
+  type: http
+  seq: 1
+}
+post {
+  url: {{baseUrl}}/emails/preview
+  body: json
+  auth: none
+}
+headers {
+  Content-Type: application/json
+  X-API-Key: {{apiKey}}
+}
+body:json {
+  {
+    "template": "email-verification",
+    "locale": "pt-BR",
+    "to": "user@example.com",
+    "data": {
+      "name": "David",
+      "actionUrl": "http://localhost:5173/pt-BR/verificar-email?token=example"
+    }
+  }
+}
+docs {
+  Renderiza HTML e texto simples sem enviar.
+}

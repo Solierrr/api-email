@@ -1,0 +1,13 @@
+meta {
+  name: GET /ready
+  type: http
+  seq: 2
+}
+get {
+  url: {{baseUrl}}/ready
+  body: none
+  auth: none
+}
+docs {
+  Verifica SMTP sem enviar emails.
+}
