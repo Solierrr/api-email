@@ -32,8 +32,6 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run gallery:build
-        env:
-          VITE_EMAIL_SWAGGER_URL: ${{ vars.VITE_EMAIL_SWAGGER_URL }}
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/qa'
         with:

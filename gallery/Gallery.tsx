@@ -9,7 +9,6 @@ import {
   OrganicLogo,
   Surface,
   SurfaceGroup,
-  SwaggerIcon,
 } from "@solaria.network/gallery-ui";
 import {
   IconBuilding,
@@ -51,19 +50,6 @@ const templateIcons: Record<string, TablerIcon> = {
 const actionClass =
   "inline-flex size-9 shrink-0 items-center justify-center rounded-small text-operational-ink transition-colors hover:bg-operational-hover focus-visible:outline-2 focus-visible:outline-operational-ink motion-reduce:transition-none";
 const repository = "https://github.com/Solierrr/api-email";
-const configuredSwagger = import.meta.env.VITE_EMAIL_SWAGGER_URL ?? "";
-const swaggerUrl = (() => {
-  try {
-    const url = new URL(configuredSwagger);
-    return ["https:", "http:"].includes(url.protocol) &&
-      !url.username &&
-      !url.password
-      ? url.href
-      : undefined;
-  } catch {
-    return undefined;
-  }
-})();
 
 function LanguageSwitcher({
   value,
@@ -124,7 +110,7 @@ function LanguageSwitcher({
           id="gallery-languages"
           role="listbox"
           aria-label="Idioma"
-          className="absolute left-0 z-50 mt-1 min-w-40 sm:left-auto sm:right-0"
+          className="absolute right-0 z-50 mt-1 min-w-40"
           onKeyDown={(event) => {
             if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
             event.preventDefault();
@@ -166,10 +152,12 @@ function EmailPreview({
   selected,
   locale,
   mobile,
+  onDeviceChange,
 }: {
   selected: Template | undefined;
   locale: Locale;
   mobile: boolean;
+  onDeviceChange: (mobile: boolean) => void;
 }) {
   const container = useRef<HTMLElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -186,30 +174,75 @@ function EmailPreview({
   const width = mobile ? 375 : 900;
   const scale = Math.min(1, size.width / width) || 1;
   return (
-    <section
-      ref={container}
-      aria-label="Prévia do e-mail"
-      className="frame-area"
+    <Surface
+      className="gallery-preview min-h-0"
+      contentClassName="gallery-preview-content"
+      style={{ maxWidth: width + 18 }}
     >
-      {selected && (
-        <div
-          className="preview-device"
-          style={{ width: width * scale, height: size.height }}
+      <div className="preview-toolbar">
+        <SurfaceGroup
+          direction="horizontal"
+          divided={false}
+          role="group"
+          aria-label="Proporção da prévia"
+          className="rounded-full! p-1!"
+          contentClassName="rounded-full!"
         >
-          <iframe
-            src={`./emails/${encodeURIComponent(selected.id)}.${locale}.html`}
-            title={`${selected.versions[locale].subject} — ${locale}`}
-            sandbox=""
-            referrerPolicy="no-referrer"
-            style={{
-              width,
-              height: Math.ceil(size.height / scale),
-              transform: `scale(${scale})`,
-            }}
+          <GroupAction
+            layout="icon"
+            label="Desktop"
+            glyph={
+              <IconDeviceDesktop
+                size={20}
+                className="shrink-0"
+                aria-hidden="true"
+              />
+            }
+            active={!mobile}
+            onClick={() => onDeviceChange(false)}
+            className="size-8!"
           />
-        </div>
-      )}
-    </section>
+          <GroupAction
+            layout="icon"
+            label="Mobile"
+            glyph={
+              <IconDeviceMobile
+                size={20}
+                className="shrink-0"
+                aria-hidden="true"
+              />
+            }
+            active={mobile}
+            onClick={() => onDeviceChange(true)}
+            className="size-8!"
+          />
+        </SurfaceGroup>
+      </div>
+      <section
+        ref={container}
+        aria-label="Prévia do e-mail"
+        className="frame-area"
+      >
+        {selected && (
+          <div
+            className="preview-device"
+            style={{ width: width * scale, height: size.height }}
+          >
+            <iframe
+              src={`./emails/${encodeURIComponent(selected.id)}.${locale}.html`}
+              title={`${selected.versions[locale].subject} — ${locale}`}
+              sandbox=""
+              referrerPolicy="no-referrer"
+              style={{
+                width,
+                height: Math.ceil(size.height / scale),
+                transform: `scale(${scale})`,
+              }}
+            />
+          </div>
+        )}
+      </section>
+    </Surface>
   );
 }
 
@@ -273,73 +306,9 @@ export default function Gallery() {
           aria-label="Início"
           className="inline-flex shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-operational-ink"
         >
-          <OrganicLogo width={2} rotateSymbol rotateShape />
+          <OrganicLogo width={2.5} rotateSymbol rotateShape />
         </a>
         <div className="ml-auto flex items-center gap-1 sm:gap-2">
-          <LanguageSwitcher
-            value={locale}
-            disabled={!selected}
-            onChange={(language) => selected && navigate(selected.id, language)}
-          />
-          <SurfaceGroup
-            direction="horizontal"
-            divided={false}
-            role="group"
-            aria-label="Proporção da prévia"
-            className="rounded-full! p-1!"
-            contentClassName="rounded-full!"
-          >
-            <GroupAction
-              layout="icon"
-              label="Desktop"
-              glyph={
-                <IconDeviceDesktop
-                  size={20}
-                  className="shrink-0"
-                  aria-hidden="true"
-                />
-              }
-              active={!mobile}
-              onClick={() => setMobile(false)}
-              className="size-8!"
-            />
-            <GroupAction
-              layout="icon"
-              label="Mobile"
-              glyph={
-                <IconDeviceMobile
-                  size={20}
-                  className="shrink-0"
-                  aria-hidden="true"
-                />
-              }
-              active={mobile}
-              onClick={() => setMobile(true)}
-              className="size-8!"
-            />
-          </SurfaceGroup>
-          {swaggerUrl ? (
-            <a
-              href={swaggerUrl}
-              aria-label="Swagger"
-              title="Swagger"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={actionClass}
-            >
-              <SwaggerIcon size={20} />
-            </a>
-          ) : (
-            <button
-              type="button"
-              aria-label="Swagger não configurado"
-              title="Swagger não configurado"
-              disabled
-              className={`${actionClass} opacity-40`}
-            >
-              <SwaggerIcon size={20} />
-            </button>
-          )}
           <a
             href={repository}
             aria-label="Repositório no GitHub"
@@ -350,13 +319,18 @@ export default function Gallery() {
           >
             <GitHubIcon size={20} />
           </a>
+          <LanguageSwitcher
+            value={locale}
+            disabled={!selected}
+            onChange={(language) => selected && navigate(selected.id, language)}
+          />
         </div>
       </header>
       <main className="gallery-workspace">
         <nav aria-label="Templates de e-mail" className="min-h-0 min-w-0">
           <SurfaceGroup
             className="gallery-templates"
-            contentClassName="gallery-template-list scrollbar-none"
+            contentClassName="gallery-template-list"
           >
             {templates.map((template) => {
               const Glyph = templateIcons[template.id] ?? IconMail;
@@ -385,9 +359,12 @@ export default function Gallery() {
             )}
           </SurfaceGroup>
         </nav>
-        <Surface className="gallery-preview min-h-0" contentClassName="h-full">
-          <EmailPreview selected={selected} locale={locale} mobile={mobile} />
-        </Surface>
+        <EmailPreview
+          selected={selected}
+          locale={locale}
+          mobile={mobile}
+          onDeviceChange={setMobile}
+        />
       </main>
     </div>
   );

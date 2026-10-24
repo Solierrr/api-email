@@ -48,7 +48,7 @@ O gerador reutiliza `renderEmail`, os componentes de `@solaria.network/web-lib/e
 
 A interface em `gallery/` utiliza os componentes de browser da web-lib por meio do alias de desenvolvimento `@solaria.network/gallery-ui`. Esse snapshot separado preserva o pacote de e-mail e seu branding atual. Navbar, menus e seleção de proporção reutilizam `OrganicLogo`, `MenuList`, `MenuItem`, `SurfaceGroup` e `GroupAction`, com CSS compilado pelo Vite/Tailwind. Os assuntos dos templates são curtos e não repetem o nome do projeto.
 
-O ícone Swagger usa a variável de build `VITE_EMAIL_SWAGGER_URL`, configurável como variável do repositório no GitHub Actions. Sem uma URL HTTP/HTTPS válida, o ícone fica desabilitado; o serviço ainda não registra uma interface Swagger publicada.
+A navbar mantém a logo no tamanho do sandbox e os acessos GitHub/idioma à direita. O controle de dispositivo pertence à prévia; o contêiner acompanha a largura desktop/mobile. A scrollbar exportada por `@solaria.network/gallery-ui/scrollbar.css` também é aplicada aos HTMLs da galeria, para funcionar dentro do iframe sem alterar os estilos dos e-mails enviados.
 
 O workflow `Email gallery` valida a geração em pull requests e publica no GitHub Pages após push em `qa`. O repositório deve ter Pages configurado para GitHub Actions. A galeria é pública e não consulta mensagens recebidas ou credenciais do ambiente QA.
 

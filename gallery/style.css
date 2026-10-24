@@ -34,10 +34,27 @@ select {
   max-height: calc(100dvh - 128px);
   overflow-y: auto;
 }
+.gallery-preview {
+  width: 100%;
+  justify-self: center;
+  transition: max-width 200ms ease;
+}
+.gallery-preview-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.preview-toolbar {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  padding: 8px;
+}
 .frame-area {
   display: flex;
   justify-content: center;
-  height: 100%;
+  flex: 1;
   min-height: 0;
   overflow: hidden;
 }
@@ -64,7 +81,8 @@ select {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .preview-device {
+  .preview-device,
+  .gallery-preview {
     transition: none;
   }
 }
