@@ -9,6 +9,7 @@ import {
   OrganicLogo,
   Surface,
   SurfaceGroup,
+  ToolbarAction,
 } from "@solaria.network/gallery-ui";
 import {
   IconBuilding,
@@ -148,6 +149,130 @@ function LanguageSwitcher({
   );
 }
 
+function DeviceSelector({
+  mobile,
+  onChange,
+}: {
+  mobile: boolean;
+  onChange: (mobile: boolean) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const pinned = useRef(false);
+  const container = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!expanded) return;
+    function outside(event: PointerEvent) {
+      if (container.current?.contains(event.target as Node)) return;
+      pinned.current = false;
+      setExpanded(false);
+    }
+    document.addEventListener("pointerdown", outside);
+    return () => document.removeEventListener("pointerdown", outside);
+  }, [expanded]);
+
+  function choose(value: boolean) {
+    onChange(value);
+    pinned.current = false;
+    trigger.current?.focus();
+    setExpanded(false);
+  }
+
+  return (
+    <div
+      ref={container}
+      className="device-selector"
+      data-expanded={expanded}
+      onPointerEnter={(event) => {
+        if (
+          event.pointerType === "mouse" &&
+          window.matchMedia("(max-width: 760px)").matches
+        )
+          setExpanded(true);
+      }}
+      onPointerLeave={() => {
+        if (!pinned.current) setExpanded(false);
+      }}
+      onBlur={(event) => {
+        if (event.currentTarget.contains(event.relatedTarget as Node)) return;
+        pinned.current = false;
+        setExpanded(false);
+      }}
+      onKeyDown={(event) => {
+        if (event.key !== "Escape") return;
+        event.preventDefault();
+        event.stopPropagation();
+        pinned.current = false;
+        trigger.current?.focus();
+        setExpanded(false);
+      }}
+    >
+      <ToolbarAction
+        ref={trigger}
+        icon="more"
+        label="Opções da prévia"
+        aria-expanded={expanded}
+        aria-controls="preview-device-options"
+        className="device-trigger"
+        onFocus={(event) => {
+          if (event.currentTarget.matches(":focus-visible")) setExpanded(true);
+        }}
+        onClick={() => {
+          pinned.current = !pinned.current;
+          setExpanded(pinned.current);
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== "ArrowDown") return;
+          event.preventDefault();
+          setExpanded(true);
+          requestAnimationFrame(() =>
+            container.current
+              ?.querySelector<HTMLElement>('[aria-pressed="true"]')
+              ?.focus(),
+          );
+        }}
+      />
+      <div id="preview-device-options" className="device-options">
+        <SurfaceGroup
+          direction="horizontal"
+          divided={false}
+          role="group"
+          aria-label="Proporção da prévia"
+          className="shrink-0"
+        >
+          <GroupAction
+            layout="icon"
+            label="Desktop"
+            glyph={
+              <IconDeviceDesktop
+                size={22}
+                className="shrink-0"
+                aria-hidden="true"
+              />
+            }
+            active={!mobile}
+            onClick={() => choose(false)}
+          />
+          <GroupAction
+            layout="icon"
+            label="Mobile"
+            glyph={
+              <IconDeviceMobile
+                size={22}
+                className="shrink-0"
+                aria-hidden="true"
+              />
+            }
+            active={mobile}
+            onClick={() => choose(true)}
+          />
+        </SurfaceGroup>
+      </div>
+    </div>
+  );
+}
+
 function EmailPreview({
   selected,
   locale,
@@ -174,72 +299,40 @@ function EmailPreview({
   const width = mobile ? 375 : 900;
   const scale = Math.min(1, size.width / width) || 1;
   return (
-    <Surface
-      className="gallery-preview min-h-0"
-      contentClassName="gallery-preview-content"
-      style={{ maxWidth: width + 18 }}
-    >
+    <div className="gallery-preview-layout" style={{ maxWidth: width + 18 }}>
       <div className="preview-toolbar">
-        <SurfaceGroup
-          direction="horizontal"
-          divided={false}
-          role="group"
-          aria-label="Proporção da prévia"
-          className="shrink-0"
-        >
-          <GroupAction
-            layout="icon"
-            label="Desktop"
-            glyph={
-              <IconDeviceDesktop
-                size={22}
-                className="shrink-0"
-                aria-hidden="true"
-              />
-            }
-            active={!mobile}
-            onClick={() => onDeviceChange(false)}
-          />
-          <GroupAction
-            layout="icon"
-            label="Mobile"
-            glyph={
-              <IconDeviceMobile
-                size={22}
-                className="shrink-0"
-                aria-hidden="true"
-              />
-            }
-            active={mobile}
-            onClick={() => onDeviceChange(true)}
-          />
-        </SurfaceGroup>
+        <DeviceSelector mobile={mobile} onChange={onDeviceChange} />
       </div>
-      <section
-        ref={container}
-        aria-label="Prévia do e-mail"
-        className="frame-area"
+      <Surface
+        className="gallery-preview min-h-0"
+        contentClassName="gallery-preview-content"
       >
-        {selected && (
-          <div
-            className="preview-device"
-            style={{ width: width * scale, height: size.height }}
-          >
-            <iframe
-              src={`./emails/${encodeURIComponent(selected.id)}.${locale}.html`}
-              title={`${selected.versions[locale].subject} — ${locale}`}
-              sandbox=""
-              referrerPolicy="no-referrer"
-              style={{
-                width,
-                height: Math.ceil(size.height / scale),
-                transform: `scale(${scale})`,
-              }}
-            />
-          </div>
-        )}
-      </section>
-    </Surface>
+        <section
+          ref={container}
+          aria-label="Prévia do e-mail"
+          className="frame-area"
+        >
+          {selected && (
+            <div
+              className="preview-device"
+              style={{ width: width * scale, height: size.height }}
+            >
+              <iframe
+                src={`./emails/${encodeURIComponent(selected.id)}.${locale}.html`}
+                title={`${selected.versions[locale].subject} — ${locale}`}
+                sandbox=""
+                referrerPolicy="no-referrer"
+                style={{
+                  width,
+                  height: Math.ceil(size.height / scale),
+                  transform: `scale(${scale})`,
+                }}
+              />
+            </div>
+          )}
+        </section>
+      </Surface>
+    </div>
   );
 }
 
