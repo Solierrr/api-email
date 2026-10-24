@@ -185,36 +185,33 @@ function EmailPreview({
           divided={false}
           role="group"
           aria-label="Proporção da prévia"
-          className="rounded-full! p-1!"
-          contentClassName="rounded-full!"
+          className="shrink-0"
         >
           <GroupAction
             layout="icon"
             label="Desktop"
             glyph={
               <IconDeviceDesktop
-                size={20}
+                size={22}
                 className="shrink-0"
                 aria-hidden="true"
               />
             }
             active={!mobile}
             onClick={() => onDeviceChange(false)}
-            className="size-8!"
           />
           <GroupAction
             layout="icon"
             label="Mobile"
             glyph={
               <IconDeviceMobile
-                size={20}
+                size={22}
                 className="shrink-0"
                 aria-hidden="true"
               />
             }
             active={mobile}
             onClick={() => onDeviceChange(true)}
-            className="size-8!"
           />
         </SurfaceGroup>
       </div>
@@ -330,7 +327,7 @@ export default function Gallery() {
         <nav aria-label="Templates de e-mail" className="min-h-0 min-w-0">
           <SurfaceGroup
             className="gallery-templates"
-            contentClassName="gallery-template-list"
+            contentClassName="gallery-template-list scrollbar-none"
           >
             {templates.map((template) => {
               const Glyph = templateIcons[template.id] ?? IconMail;
