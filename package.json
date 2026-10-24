@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
     "preview:seed": "node --env-file=.env scripts/seed-preview.mjs",
+    "gallery:build": "npm run build && node scripts/build-gallery.mjs",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",

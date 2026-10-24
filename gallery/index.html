@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Galeria dos templates de e-mail da Solaria, com exemplos em português, inglês e espanhol."
+    />
+    <title>Solaria · Galeria de e-mails</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="stylesheet" href="./theme.css" />
+    <link rel="stylesheet" href="./style.css" />
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <header class="header">
+      <a class="brand" href="./">Solaria<span>E-mails</span></a>
+      <a
+        class="source"
+        href="https://github.com/Solierrr/api-email"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Repositório ↗</a
+      >
+    </header>
+    <main>
+      <div class="intro">
+        <h1>Galeria de e-mails</h1>
+        <p>
+          Conheça os templates da Solaria. Os dados são fictícios e os links dos
+          exemplos estão desativados.
+        </p>
+      </div>
+      <div class="workspace">
+        <nav class="surface templates" aria-label="Templates de e-mail">
+          <p class="section-label">Templates <span id="count"></span></p>
+          <div id="templates"></div>
+        </nav>
+        <section class="preview" aria-label="Prévia do e-mail">
+          <div class="surface toolbar">
+            <label for="locale"
+              >Idioma
+              <select id="locale" disabled>
+                <option value="pt-BR">Português</option>
+                <option value="en-US">English</option>
+                <option value="es-ES">Español</option>
+              </select>
+            </label>
+            <div
+              class="viewport-controls"
+              role="group"
+              aria-label="Largura da prévia"
+            >
+              <button type="button" data-viewport="desktop" aria-pressed="true">
+                Desktop
+              </button>
+              <button type="button" data-viewport="mobile" aria-pressed="false">
+                Mobile
+              </button>
+            </div>
+          </div>
+          <div class="surface preview-surface">
+            <div class="message-heading" aria-live="polite">
+              <span class="section-label">Assunto</span>
+              <h2 id="subject">Carregando templates…</h2>
+              <p id="template-id"></p>
+            </div>
+            <div class="frame-area">
+              <iframe
+                id="email"
+                title="Prévia do template de e-mail"
+                sandbox=""
+                referrerpolicy="no-referrer"
+              ></iframe>
+            </div>
+          </div>
+          <p id="error" role="alert" hidden>
+            Não foi possível carregar os templates. Atualize a página para
+            tentar novamente.
+          </p>
+        </section>
+      </div>
+      <noscript
+        >Ative o JavaScript para navegar pelos templates e idiomas.</noscript
+      >
+    </main>
+    <footer>Solaria · Exemplos dos templates transacionais</footer>
+  </body>
+</html>
