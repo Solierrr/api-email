@@ -7,6 +7,10 @@ import { renderEmail } from "../dist/email/email.service.js";
 const root = new URL("../", import.meta.url);
 const output = new URL("gallery-dist/", root);
 const locales = ["pt-BR", "en-US", "es-ES"];
+const scrollbarCss = await readFile(
+  new URL(import.meta.resolve("@solaria.network/gallery-ui/scrollbar.css")),
+  "utf8",
+);
 
 const outputPath = resolve(fileURLToPath(output));
 if (outputPath !== resolve(fileURLToPath(root), "gallery-dist")) {
@@ -36,12 +40,21 @@ const manifest = await Promise.all(
             data,
           });
           const rendered = await renderEmail(request);
-          const html = rendered.html.replace(/<a\b[^>]*>/gi, (tag) =>
-            tag.replace(
-              /\shref="[^"]*"/gi,
-              ' aria-disabled="true" tabindex="-1"',
-            ),
-          );
+          const html = rendered.html
+            .replace(
+              "</head>",
+              `<style data-preview-scrollbar>${scrollbarCss}</style></head>`,
+            )
+            .replace(/<a\b[^>]*>/gi, (tag) =>
+              tag.replace(
+                /\shref="[^"]*"/gi,
+                ' aria-disabled="true" tabindex="-1"',
+              ),
+            );
+          if (!html.includes("data-preview-scrollbar"))
+            throw new Error(
+              `Missing preview scrollbar in ${template}/${locale}`,
+            );
           if (
             (html.match(/<a\b[^>]*>/gi) ?? []).some((tag) =>
               /\shref\s*=/i.test(tag),
