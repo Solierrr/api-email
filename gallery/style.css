@@ -47,16 +47,19 @@ select {
   width: 100%;
 }
 .gallery-preview-content {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
 }
 .preview-toolbar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
   display: flex;
-  flex-shrink: 0;
   justify-content: flex-end;
-  padding: 0 0 8px;
 }
 .device-selector {
   display: flex;
