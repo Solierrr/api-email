@@ -19,7 +19,7 @@ function showTemplate() {
   localeSelect.value = locale;
   subject.textContent = version.subject;
   identifier.textContent = selected.id;
-  frame.src = `./${version.path}`;
+  frame.src = `./emails/${encodeURIComponent(selected.id)}.${encodeURIComponent(locale)}.html`;
   frame.title = `${version.subject} — ${locale}`;
   for (const button of list.querySelectorAll("button")) {
     if (button.dataset.template === selected.id)
@@ -72,4 +72,4 @@ async function load() {
   }
 }
 
-void load();
+await load();

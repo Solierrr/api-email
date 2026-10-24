@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="stylesheet" href="./theme.css" />
     <link rel="stylesheet" href="./style.css" />
-    <script src="./app.js" defer></script>
+    <script src="./app.js" type="module"></script>
   </head>
   <body>
     <header class="header">
@@ -47,18 +47,15 @@
                 <option value="es-ES">Español</option>
               </select>
             </label>
-            <div
-              class="viewport-controls"
-              role="group"
-              aria-label="Largura da prévia"
-            >
+            <fieldset class="viewport-controls">
+              <legend class="sr-only">Largura da prévia</legend>
               <button type="button" data-viewport="desktop" aria-pressed="true">
                 Desktop
               </button>
               <button type="button" data-viewport="mobile" aria-pressed="false">
                 Mobile
               </button>
-            </div>
+            </fieldset>
           </div>
           <div class="surface preview-surface">
             <div class="message-heading" aria-live="polite">
