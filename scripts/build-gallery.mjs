@@ -1,6 +1,6 @@
 import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { theme } from "@solierrr/web-lib/tokens";
+import { theme } from "@solaria.network/web-lib/tokens";
 import { emailSchema, emailTemplates } from "../dist/email/email.schema.js";
 import { renderEmail } from "../dist/email/email.service.js";
 
