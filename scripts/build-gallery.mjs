@@ -1,6 +1,6 @@
-import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { theme } from "@solaria.network/web-lib/tokens";
 import { emailSchema, emailTemplates } from "../dist/email/email.schema.js";
 import { renderEmail } from "../dist/email/email.service.js";
 
@@ -8,15 +8,13 @@ const root = new URL("../", import.meta.url);
 const output = new URL("gallery-dist/", root);
 const locales = ["pt-BR", "en-US", "es-ES"];
 
+const outputPath = resolve(fileURLToPath(output));
+if (outputPath !== resolve(fileURLToPath(root), "gallery-dist")) {
+  throw new Error("Unexpected gallery output directory");
+}
+await rm(outputPath, { recursive: true, force: true });
 await mkdir(new URL("emails/", output), { recursive: true });
-await cp(new URL("gallery/", root), output, { recursive: true });
 await writeFile(new URL(".nojekyll", output), "");
-await writeFile(
-  new URL("theme.css", output),
-  `:root{${Object.entries(theme)
-    .map(([key, value]) => `${key}:${value}`)
-    .join(";")}}`,
-);
 
 const manifest = await Promise.all(
   emailTemplates.map(async (template) => {
