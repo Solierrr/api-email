@@ -45,7 +45,7 @@ jobs:
       pages: write
       id-token: write
     environment:
-      name: github-pages
+      name: PREVIEW
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/configure-pages@v5
