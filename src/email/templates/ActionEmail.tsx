@@ -1,4 +1,8 @@
-import { EmailAction, EmailLayout, EmailText } from "@solierrr/web-lib/email";
+import {
+  EmailAction,
+  EmailLayout,
+  EmailText,
+} from "@solaria.network/web-lib/email";
 import { getEmailContent } from "./email.content.js";
 import type { EmailRequest } from "../email.schema.js";
 import { DetailCard } from "../components/DetailCard.js";
@@ -36,11 +40,44 @@ export default function ActionEmail({ request }: { request: EmailRequest }) {
       status: "Aprobado",
     },
   }[request.locale];
+  const webPaths = {
+    "pt-BR": { privacy: "/pt-BR/politicas/privacidade" },
+    "en-US": { privacy: "/en-US/policies/privacy" },
+    "es-ES": { privacy: "/es-ES/politicas/privacidad" },
+  }[request.locale];
+  const siteUrl = "https://solarianetwork.site";
+  const supportEmail = "solaria.innetwork@gmail.com";
+  const footer =
+    request.template === "user-deletion"
+      ? {
+          "pt-BR": (
+            <>
+              Não reconhece esta exclusão? Comunique-se conosco em{" "}
+              <a href={`mailto:${supportEmail}`}>{supportEmail}</a>!
+            </>
+          ),
+          "en-US": (
+            <>
+              Don't recognize this deletion? Contact us at{" "}
+              <a href={`mailto:${supportEmail}`}>{supportEmail}</a>!
+            </>
+          ),
+          "es-ES": (
+            <>
+              ¿No reconoces esta eliminación? Comunícate con nosotros en{" "}
+              <a href={`mailto:${supportEmail}`}>{supportEmail}</a>!
+            </>
+          ),
+        }[request.locale]
+      : content.footer;
   return (
     <EmailLayout
       locale={request.locale}
       title={content.subject}
-      footer={content.footer}
+      footer={footer}
+      siteUrl={siteUrl}
+      privacyUrl={`${siteUrl}${webPaths.privacy}`}
+      githubUrl="https://github.com/Solierrr/web-app"
     >
       {request.data.name && (
         <EmailText>
@@ -124,11 +161,7 @@ export default function ActionEmail({ request }: { request: EmailRequest }) {
         </DetailCard>
       )}
       {request.data.actionUrl && request.template !== "user-deletion" && (
-        <EmailAction
-          href={request.data.actionUrl}
-          label={content.button}
-          fallback={content.fallback}
-        />
+        <EmailAction href={request.data.actionUrl} label={content.button} />
       )}
     </EmailLayout>
   );

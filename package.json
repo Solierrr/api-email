@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
     "preview:seed": "node --env-file=.env scripts/seed-preview.mjs",
+    "gallery:build": "npm run build && node scripts/build-gallery.mjs",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
@@ -17,7 +18,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@solierrr/web-lib": "file:vendor/solierrr-web-lib-0.1.0.tgz",
+    "@solaria.network/web-lib": "file:vendor/solaria.network-web-lib-0.3.1-email-tabler-footer-v6.tgz",
     "fastify": "5.12.5",
     "nodemailer": "10.0.16",
     "react": "19.3.0",

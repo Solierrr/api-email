@@ -38,9 +38,17 @@ Sem Docker, configure um capturador SMTP autorizado nas variáveis e use npm run
 
 ## Atualizar o UI kit local
 
-O serviço consome @solierrr/web-lib/email por meio do pacote local em vendor/solierrr-web-lib-0.1.0.tgz. Para atualizar, execute na web-lib `npm run build` e `npm pack --pack-destination ../api-email/vendor`; depois, neste serviço, `npm install ./vendor/solierrr-web-lib-0.1.0.tgz`. Reinicie o serviço e rode `npm run preview:seed`. O pacote local também é copiado no build Docker. Nenhuma publicação npm é necessária.
+O serviço consome `@solaria.network/web-lib/email` por meio do pacote local versionado em `vendor/`. Para atualizar, execute `npm run build` e `npm pack --pack-destination ../api-email/vendor` na `web-lib`, atualize o caminho do tarball em `package.json` e execute `npm install` neste serviço. Reinicie a API e rode `npm run preview:seed`. O Docker copia o diretório `vendor` antes de executar `npm ci`; nenhuma publicação npm é necessária.
 
-## Verificação
+## Galeria estática
+
+Execute `npm run gallery:build` para gerar `gallery-dist/`. Sirva essa pasta com um servidor HTTP estático para navegar pelos templates e idiomas. Não é necessário `.env`, API, SMTP ou Mailpit.
+
+O gerador reutiliza `renderEmail`, os componentes de `@solaria.network/web-lib/email` e os exemplos de `preview/`. Gera os três idiomas para cada template registrado, substitui destinatário e URL de ação por dados de demonstração e desativa os links dentro dos e-mails. A prévia fica em um iframe com sandbox.
+
+O workflow `Email gallery` valida a geração em pull requests e publica no GitHub Pages após push em `qa`. O repositório deve ter Pages configurado para GitHub Actions. A galeria é pública e não consulta mensagens recebidas ou credenciais do ambiente QA.
+
+## Verificação do serviço
 
 ```sh
 npm run typecheck
