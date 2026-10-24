@@ -62,6 +62,7 @@ it.each(["pt-BR", "en-US", "es-ES"] as EmailLocale[])(
         },
       });
       expect(result.subject).toBeTruthy();
+      expect(result.subject).not.toMatch(/solaria/i);
       expect(result.html).toContain(`lang="${locale}"`);
       expect(result.html).toContain("Solaria");
       expect(result.html).toContain('alt="Solaria"');
