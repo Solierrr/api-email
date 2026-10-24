@@ -300,13 +300,13 @@ function EmailPreview({
   const scale = Math.min(1, size.width / width) || 1;
   return (
     <div className="gallery-preview-layout" style={{ maxWidth: width + 18 }}>
-      <div className="preview-toolbar">
-        <DeviceSelector mobile={mobile} onChange={onDeviceChange} />
-      </div>
       <Surface
         className="gallery-preview min-h-0"
         contentClassName="gallery-preview-content"
       >
+        <div className="preview-toolbar">
+          <DeviceSelector mobile={mobile} onChange={onDeviceChange} />
+        </div>
         <section
           ref={container}
           aria-label="Prévia do e-mail"
