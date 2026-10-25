@@ -100,40 +100,40 @@ select {
   .gallery-template-list {
     max-height: 180px;
   }
-  .device-trigger {
-    display: flex;
-    opacity: 0.5;
-  }
-  .device-trigger:hover,
-  .device-trigger:focus-visible,
-  .device-selector[data-expanded="true"] .device-trigger {
-    opacity: 1;
-  }
-  .device-options {
-    width: max-content;
-    max-width: 0;
-    max-height: 0;
-    opacity: 0;
-    visibility: hidden;
-    overflow: hidden;
-    transform: scale(0.95);
-    transform-origin: right center;
-    transition:
-      max-width 200ms ease,
-      max-height 200ms ease,
-      opacity 150ms ease,
-      transform 200ms ease;
-  }
-  .device-selector[data-expanded="true"] {
-    gap: 8px;
-  }
-  .device-selector[data-expanded="true"] .device-options {
-    max-width: 160px;
-    max-height: 80px;
-    opacity: 1;
-    visibility: visible;
-    transform: scale(1);
-  }
+}
+.device-selector[data-compact="true"] .device-trigger {
+  display: flex;
+  opacity: 0.5;
+}
+.device-trigger:hover,
+.device-trigger:focus-visible,
+.device-selector[data-compact="true"][data-expanded="true"] .device-trigger {
+  opacity: 1;
+}
+.device-selector[data-compact="true"] .device-options {
+  width: max-content;
+  max-width: 0;
+  max-height: 0;
+  opacity: 0;
+  visibility: hidden;
+  overflow: hidden;
+  transform: scale(0.95);
+  transform-origin: right center;
+  transition:
+    max-width 200ms ease,
+    max-height 200ms ease,
+    opacity 150ms ease,
+    transform 200ms ease;
+}
+.device-selector[data-compact="true"][data-expanded="true"] .device-trigger {
+  display: none;
+}
+.device-selector[data-compact="true"][data-expanded="true"] .device-options {
+  max-width: 160px;
+  max-height: 80px;
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
 }
 @media (prefers-reduced-motion: reduce) {
   .preview-device,
