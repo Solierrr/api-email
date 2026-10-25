@@ -101,7 +101,17 @@ select {
     max-height: 180px;
   }
 }
+.device-selector[data-compact="true"] {
+  position: relative;
+  width: 114px;
+  height: 66px;
+  pointer-events: none;
+}
 .device-selector[data-compact="true"] .device-trigger {
+  position: absolute;
+  top: 0;
+  right: 0;
+  pointer-events: auto;
   display: flex;
   opacity: 0.5;
 }
@@ -111,17 +121,17 @@ select {
   opacity: 1;
 }
 .device-selector[data-compact="true"] .device-options {
+  pointer-events: auto;
+  position: absolute;
+  top: 0;
+  right: 0;
   width: max-content;
-  max-width: 0;
-  max-height: 0;
   opacity: 0;
   visibility: hidden;
   overflow: hidden;
   transform: scale(0.95);
   transform-origin: right center;
   transition:
-    max-width 200ms ease,
-    max-height 200ms ease,
     opacity 150ms ease,
     transform 200ms ease;
 }
@@ -129,8 +139,6 @@ select {
   display: none;
 }
 .device-selector[data-compact="true"][data-expanded="true"] .device-options {
-  max-width: 160px;
-  max-height: 80px;
   opacity: 1;
   visibility: visible;
   transform: scale(1);

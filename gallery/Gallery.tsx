@@ -160,7 +160,6 @@ function DeviceSelector({
   const [smallScreen, setSmallScreen] = useState(
     () => window.matchMedia("(max-width: 760px)").matches,
   );
-  const pinned = useRef(false);
   const container = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
 
@@ -175,12 +174,10 @@ function DeviceSelector({
     if (!expanded) return;
     function outside(event: PointerEvent) {
       if (container.current?.contains(event.target as Node)) return;
-      pinned.current = false;
       setExpanded(false);
     }
     function iframeFocus() {
       if (document.activeElement instanceof HTMLIFrameElement) {
-        pinned.current = false;
         setExpanded(false);
       }
     }
@@ -194,7 +191,6 @@ function DeviceSelector({
 
   function choose(value: boolean) {
     onChange(value);
-    pinned.current = false;
     setExpanded(false);
     requestAnimationFrame(() => trigger.current?.focus());
   }
@@ -205,23 +201,10 @@ function DeviceSelector({
       className="device-selector"
       data-expanded={expanded}
       data-compact={mobile || smallScreen}
-      onPointerEnter={(event) => {
-        if (event.pointerType === "mouse" && (mobile || smallScreen))
-          setExpanded(true);
-      }}
-      onPointerLeave={() => {
-        if (!pinned.current) setExpanded(false);
-      }}
-      onBlur={(event) => {
-        if (event.currentTarget.contains(event.relatedTarget as Node)) return;
-        pinned.current = false;
-        setExpanded(false);
-      }}
       onKeyDown={(event) => {
         if (event.key !== "Escape") return;
         event.preventDefault();
         event.stopPropagation();
-        pinned.current = false;
         setExpanded(false);
         requestAnimationFrame(() => trigger.current?.focus());
       }}
@@ -234,7 +217,6 @@ function DeviceSelector({
         aria-controls="preview-device-options"
         className="device-trigger"
         onClick={() => {
-          pinned.current = true;
           setExpanded(true);
           requestAnimationFrame(() =>
             container.current
