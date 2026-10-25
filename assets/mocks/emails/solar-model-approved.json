@@ -7,6 +7,7 @@
     "modelName": "Solaria Mono 550 W",
     "modelManufacturer": "Solaria",
     "modelPowerWatts": 550,
+    "modelImageUrl": "https://res.cloudinary.com/solaria/image/upload/mocks/solar-panels-f2b8091a5514.webp",
     "actionUrl": "http://localhost:5173/pt-BR"
   }
 }
