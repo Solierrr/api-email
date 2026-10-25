@@ -2,15 +2,15 @@ import { expect, it } from "vitest";
 import { readConfig } from "./config.js";
 import { isAllowedActionUrl } from "../email/email.schema.js";
 const env = {
-  EMAIL_API_KEY: "test-key-only-not-a-secret-1234567890",
+  SERVICE_KEY_API_CORE: "test-key-only-not-a-secret-1234567890",
   EMAIL_FROM: "noreply@example.com",
   EMAIL_ALLOWED_ORIGINS: "http://localhost:5173",
   SMTP_HOST: "localhost",
 };
 it("requires credentials and reports field names without values", () => {
   expect(() =>
-    readConfig({ ...env, EMAIL_API_KEY: "short-sensitive-key" }),
-  ).toThrow("EMAIL_API_KEY");
+    readConfig({ ...env, SERVICE_KEY_API_AUTH: "short-sensitive-key" }),
+  ).toThrow("SERVICE_KEY_API_AUTH");
   expect(() => readConfig({ ...env, SMTP_USER: "username" })).toThrow(
     "configured together",
   );
@@ -45,5 +45,16 @@ it("rejects malformed origins and invalid environment values", () => {
   ).toThrow();
   expect(() => readConfig({ ...env, SMTP_SECURE: "yes" })).toThrow(
     "SMTP_SECURE",
+  );
+});
+it("keeps documentation on by default and parses the CORS origins", () => {
+  const config = readConfig(env);
+  expect(config.DOCS_ENABLED).toBe(true);
+  expect(config.corsOrigins).toEqual([
+    "http://localhost:3000",
+    "http://localhost:5173",
+  ]);
+  expect(readConfig({ ...env, DOCS_ENABLED: "false" }).DOCS_ENABLED).toBe(
+    false,
   );
 });

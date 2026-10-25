@@ -13,10 +13,14 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "openapi": "tsx scripts/export-openapi.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@fastify/cors": "11.3.1",
+    "@fastify/swagger": "9.9.2",
+    "@fastify/swagger-ui": "6.1.2",
     "@solierrr/web-lib": "file:vendor/solierrr-web-lib-0.1.0.tgz",
     "fastify": "5.12.5",
     "nodemailer": "10.0.16",

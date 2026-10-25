@@ -1,0 +1,554 @@
+openapi: 3.1.0
+info:
+  title: Solaria — api-email
+  description: "Renderiza e envia e-mails transacionais a partir de modelos fixos,
+    em pt-BR, en-US e es-ES. É chamado só por outros serviços (api-core e
+    api-auth): autentique com a chave de serviço no cabeçalho X-Service-Key."
+  version: 0.2.0 # x-release-please-version
+  contact:
+    name: Solaria
+    url: https://github.com/Solierrr
+  license:
+    name: CC0-1.0
+    url: https://creativecommons.org/publicdomain/zero/1.0/
+components:
+  securitySchemes:
+    serviceKey:
+      type: apiKey
+      in: header
+      name: X-Service-Key
+  schemas:
+    ProblemFieldError:
+      type: object
+      properties:
+        field:
+          type: string
+          example: data.actionUrl
+        errorCode:
+          type: string
+          example: VALIDATION_FAILED
+        detail:
+          type: string
+          example: Campo obrigatório
+      required:
+        - field
+        - errorCode
+        - detail
+      additionalProperties: false
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+          example: about:blank
+        title:
+          type: string
+          example: EMAIL_SEND_FAILED
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+          example: 503
+        errorCode:
+          type: string
+          example: EMAIL_SEND_FAILED
+        detail:
+          type: string
+          example: O servidor SMTP não aceitou a mensagem.
+        instance:
+          type: string
+          example: /emails
+        timestamp:
+          type: string
+          format: date-time
+          example: 2026-10-25T13:45:00.000Z
+        requestId:
+          description: Id da requisição nos logs do serviço.
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProblemFieldError"
+      required:
+        - type
+        - title
+        - status
+        - errorCode
+        - detail
+        - instance
+        - timestamp
+      additionalProperties: false
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Indica se o processo está vivo
+      tags:
+        - Saúde
+      description: Não consulta dependências; traz a versão do serviço (a do package.json).
+      security: []
+      responses:
+        "200":
+          description: Processo no ar
+          content:
+            application/json:
+              schema:
+                description: Processo no ar
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - UP
+                  version:
+                    type: string
+                    example: 0.2.0
+                required:
+                  - status
+                  - version
+                additionalProperties: false
+        "500":
+          description: Erro interno inesperado
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /ready:
+    get:
+      operationId: getReady
+      summary: Indica se o serviço está pronto para atender
+      tags:
+        - Saúde
+      description: Pronto quando o servidor SMTP aceita conexão e autenticação em até
+        2 segundos.
+      security: []
+      responses:
+        "200":
+          description: SMTP acessível
+          content:
+            application/json:
+              schema:
+                description: SMTP acessível
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - UP
+                      - DOWN
+                required:
+                  - status
+                additionalProperties: false
+        "500":
+          description: Erro interno inesperado
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "503":
+          description: SMTP inacessível
+          content:
+            application/json:
+              schema:
+                description: SMTP inacessível
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - UP
+                      - DOWN
+                required:
+                  - status
+                additionalProperties: false
+  /emails:
+    post:
+      operationId: sendEmail
+      summary: Renderiza e envia um e-mail
+      tags:
+        - E-mails
+      description: "Responde depois do aceite do servidor SMTP, que não é confirmação
+        de entrega. Sem fila, retry nem idempotência: repetir após timeout pode
+        duplicar o e-mail. Um destinatário por chamada. Campos desconhecidos são
+        recusados. Regras por modelo: company-invitation e
+        company-email-verification exigem data.companyName; project-invitation
+        exige data.projectName, data.projectRole e data.invitationExpiresAt;
+        solar-model-approved exige data.modelName; registration-rejected exige
+        data.reason; todos, menos user-deletion, exigem data.actionUrl, cuja
+        origem precisa estar em EMAIL_ALLOWED_ORIGINS."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                template:
+                  type: string
+                  enum:
+                    - email-verification
+                    - password-reset
+                    - company-invitation
+                    - project-invitation
+                    - user-deletion
+                    - registration-approved
+                    - registration-rejected
+                    - solar-model-approved
+                    - company-email-verification
+                locale:
+                  default: pt-BR
+                  type: string
+                  enum:
+                    - pt-BR
+                    - en-US
+                    - es-ES
+                to:
+                  type: string
+                  maxLength: 320
+                  format: email
+                  pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    companyName:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    projectName:
+                      type: string
+                      minLength: 1
+                      maxLength: 160
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    projectRole:
+                      type: string
+                      enum:
+                        - MANAGER
+                        - MEMBER
+                        - VIEWER
+                    invitationExpiresAt:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                    modelName:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    modelManufacturer:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    modelPowerWatts:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 10000
+                    modelImageUrl:
+                      type: string
+                      maxLength: 2048
+                      format: uri
+                    reason:
+                      type: string
+                      minLength: 1
+                      maxLength: 1000
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    actionUrl:
+                      type: string
+                      maxLength: 2048
+                      format: uri
+                  additionalProperties: false
+              required:
+                - template
+                - to
+                - data
+              additionalProperties: false
+            example:
+              template: email-verification
+              locale: pt-BR
+              to: usuario@example.com
+              data:
+                name: Ana
+                actionUrl: https://web-app.example.com/pt-BR/verificar-email?token=exemplo
+      x-error-codes:
+        - UNAUTHENTICATED
+        - FORBIDDEN
+        - VALIDATION_FAILED
+        - MALFORMED_REQUEST
+        - INVALID_ACTION_URL
+        - PAYLOAD_TOO_LARGE
+        - UNSUPPORTED_MEDIA_TYPE
+        - EMAIL_SEND_FAILED
+        - INTERNAL_ERROR
+      responses:
+        "200":
+          description: E-mail aceito pelo servidor SMTP
+          content:
+            application/json:
+              schema:
+                description: E-mail aceito pelo servidor SMTP
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - accepted
+                  messageId:
+                    type: string
+                    example: <a1b2c3@solaria.local>
+                required:
+                  - status
+                  - messageId
+                additionalProperties: false
+        "400":
+          description: "INVALID_ACTION_URL: link fora das origens permitidas"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "401":
+          description: "UNAUTHENTICATED: chave de serviço ausente ou inválida"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: "FORBIDDEN: serviço chamador não aceito nesta rota"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "413":
+          description: "PAYLOAD_TOO_LARGE: corpo maior que 16 KiB"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "415":
+          description: "UNSUPPORTED_MEDIA_TYPE: corpo que não é JSON"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "422":
+          description: "VALIDATION_FAILED: corpo inválido (detalhes em errors);
+            MALFORMED_REQUEST: JSON ilegível"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: "INTERNAL_ERROR: erro interno inesperado"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "503":
+          description: "EMAIL_SEND_FAILED: o servidor SMTP não aceitou a mensagem"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /emails/preview:
+    post:
+      operationId: previewEmail
+      summary: Renderiza um e-mail sem enviar
+      tags:
+        - E-mails
+      description: "Devolve assunto, HTML e texto do modelo, sem contato com o SMTP.
+        Um destinatário por chamada. Campos desconhecidos são recusados. Regras
+        por modelo: company-invitation e company-email-verification exigem
+        data.companyName; project-invitation exige data.projectName,
+        data.projectRole e data.invitationExpiresAt; solar-model-approved exige
+        data.modelName; registration-rejected exige data.reason; todos, menos
+        user-deletion, exigem data.actionUrl, cuja origem precisa estar em
+        EMAIL_ALLOWED_ORIGINS."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                template:
+                  type: string
+                  enum:
+                    - email-verification
+                    - password-reset
+                    - company-invitation
+                    - project-invitation
+                    - user-deletion
+                    - registration-approved
+                    - registration-rejected
+                    - solar-model-approved
+                    - company-email-verification
+                locale:
+                  default: pt-BR
+                  type: string
+                  enum:
+                    - pt-BR
+                    - en-US
+                    - es-ES
+                to:
+                  type: string
+                  maxLength: 320
+                  format: email
+                  pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    companyName:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    projectName:
+                      type: string
+                      minLength: 1
+                      maxLength: 160
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    projectRole:
+                      type: string
+                      enum:
+                        - MANAGER
+                        - MEMBER
+                        - VIEWER
+                    invitationExpiresAt:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                    modelName:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    modelManufacturer:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    modelPowerWatts:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 10000
+                    modelImageUrl:
+                      type: string
+                      maxLength: 2048
+                      format: uri
+                    reason:
+                      type: string
+                      minLength: 1
+                      maxLength: 1000
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    actionUrl:
+                      type: string
+                      maxLength: 2048
+                      format: uri
+                  additionalProperties: false
+              required:
+                - template
+                - to
+                - data
+              additionalProperties: false
+            example:
+              template: email-verification
+              locale: pt-BR
+              to: usuario@example.com
+              data:
+                name: Ana
+                actionUrl: https://web-app.example.com/pt-BR/verificar-email?token=exemplo
+      x-error-codes:
+        - UNAUTHENTICATED
+        - FORBIDDEN
+        - VALIDATION_FAILED
+        - MALFORMED_REQUEST
+        - INVALID_ACTION_URL
+        - PAYLOAD_TOO_LARGE
+        - UNSUPPORTED_MEDIA_TYPE
+        - INTERNAL_ERROR
+      responses:
+        "200":
+          description: E-mail renderizado
+          content:
+            application/json:
+              schema:
+                description: E-mail renderizado
+                type: object
+                properties:
+                  subject:
+                    type: string
+                    example: Confirme seu e-mail
+                  html:
+                    type: string
+                  text:
+                    type: string
+                required:
+                  - subject
+                  - html
+                  - text
+                additionalProperties: false
+        "400":
+          description: "INVALID_ACTION_URL: link fora das origens permitidas"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "401":
+          description: "UNAUTHENTICATED: chave de serviço ausente ou inválida"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: "FORBIDDEN: serviço chamador não aceito nesta rota"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "413":
+          description: "PAYLOAD_TOO_LARGE: corpo maior que 16 KiB"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "415":
+          description: "UNSUPPORTED_MEDIA_TYPE: corpo que não é JSON"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "422":
+          description: "VALIDATION_FAILED: corpo inválido (detalhes em errors);
+            MALFORMED_REQUEST: JSON ilegível"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: "INTERNAL_ERROR: erro interno inesperado"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+servers:
+  - url: https://api-email-6swz.onrender.com
+    description: QA
+  - url: http://localhost:8083
+    description: Local
+security:
+  - serviceKey: []
+tags:
+  - name: E-mails
+    description: Prévia e envio de e-mails transacionais.
+  - name: Saúde
+    description: Verificações de vivo e pronto usadas pela plataforma.
