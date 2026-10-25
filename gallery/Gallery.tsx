@@ -157,9 +157,19 @@ function DeviceSelector({
   onChange: (mobile: boolean) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [smallScreen, setSmallScreen] = useState(
+    () => window.matchMedia("(max-width: 760px)").matches,
+  );
   const pinned = useRef(false);
   const container = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 760px)");
+    const update = () => setSmallScreen(query.matches);
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
     if (!expanded) return;
@@ -168,15 +178,25 @@ function DeviceSelector({
       pinned.current = false;
       setExpanded(false);
     }
+    function iframeFocus() {
+      if (document.activeElement instanceof HTMLIFrameElement) {
+        pinned.current = false;
+        setExpanded(false);
+      }
+    }
     document.addEventListener("pointerdown", outside);
-    return () => document.removeEventListener("pointerdown", outside);
+    window.addEventListener("blur", iframeFocus);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      window.removeEventListener("blur", iframeFocus);
+    };
   }, [expanded]);
 
   function choose(value: boolean) {
     onChange(value);
     pinned.current = false;
-    trigger.current?.focus();
     setExpanded(false);
+    requestAnimationFrame(() => trigger.current?.focus());
   }
 
   return (
@@ -184,11 +204,9 @@ function DeviceSelector({
       ref={container}
       className="device-selector"
       data-expanded={expanded}
+      data-compact={mobile || smallScreen}
       onPointerEnter={(event) => {
-        if (
-          event.pointerType === "mouse" &&
-          window.matchMedia("(max-width: 760px)").matches
-        )
+        if (event.pointerType === "mouse" && (mobile || smallScreen))
           setExpanded(true);
       }}
       onPointerLeave={() => {
@@ -204,8 +222,8 @@ function DeviceSelector({
         event.preventDefault();
         event.stopPropagation();
         pinned.current = false;
-        trigger.current?.focus();
         setExpanded(false);
+        requestAnimationFrame(() => trigger.current?.focus());
       }}
     >
       <ToolbarAction
@@ -215,12 +233,14 @@ function DeviceSelector({
         aria-expanded={expanded}
         aria-controls="preview-device-options"
         className="device-trigger"
-        onFocus={(event) => {
-          if (event.currentTarget.matches(":focus-visible")) setExpanded(true);
-        }}
         onClick={() => {
-          pinned.current = !pinned.current;
-          setExpanded(pinned.current);
+          pinned.current = true;
+          setExpanded(true);
+          requestAnimationFrame(() =>
+            container.current
+              ?.querySelector<HTMLElement>('[aria-pressed="true"]')
+              ?.focus(),
+          );
         }}
         onKeyDown={(event) => {
           if (event.key !== "ArrowDown") return;
