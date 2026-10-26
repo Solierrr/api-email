@@ -6,7 +6,6 @@ import {
   Icon,
   MenuItem,
   MenuList,
-  OrganicLogo,
   Surface,
   SurfaceGroup,
   ToolbarAction,
@@ -393,18 +392,6 @@ export default function Gallery() {
   return (
     <div className="gallery-shell flex h-dvh min-h-0 flex-col bg-operational-shell">
       <header className="navbar-frame z-30 w-full justify-between gap-2 bg-operational-shell!">
-        <a
-          href="./"
-          aria-label="Início"
-          className="inline-flex shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-operational-ink"
-        >
-          <OrganicLogo
-            width={2.5}
-            motion="expressive"
-            rotateSymbol
-            rotateShape
-          />
-        </a>
         <div className="ml-auto flex items-center gap-1 sm:gap-2">
           <a
             href={repository}
@@ -424,7 +411,10 @@ export default function Gallery() {
         </div>
       </header>
       <main className="gallery-workspace" data-mobile-preview={mobile}>
-        <nav aria-label="Templates de e-mail" className="min-h-0 min-w-0">
+        <nav
+          aria-label="Templates de e-mail"
+          className="flex min-h-0 min-w-0 items-start"
+        >
           <SurfaceGroup
             className="gallery-templates"
             contentClassName="gallery-template-list scrollbar-none"
