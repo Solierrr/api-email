@@ -398,7 +398,12 @@ export default function Gallery() {
           aria-label="Início"
           className="inline-flex shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-operational-ink"
         >
-          <OrganicLogo width={2.5} rotateSymbol rotateShape />
+          <OrganicLogo
+            width={2.5}
+            motion="expressive"
+            rotateSymbol
+            rotateShape
+          />
         </a>
         <div className="ml-auto flex items-center gap-1 sm:gap-2">
           <a
@@ -418,7 +423,7 @@ export default function Gallery() {
           />
         </div>
       </header>
-      <main className="gallery-workspace">
+      <main className="gallery-workspace" data-mobile-preview={mobile}>
         <nav aria-label="Templates de e-mail" className="min-h-0 min-w-0">
           <SurfaceGroup
             className="gallery-templates"
