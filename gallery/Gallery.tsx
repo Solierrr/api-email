@@ -1,4 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { useTranslation } from "react-i18next";
 import {
   GitHubIcon,
@@ -274,15 +280,47 @@ function DeviceSelector({
   );
 }
 
+function usePreviewWidth(mobile: boolean) {
+  const [width, setWidth] = useState(mobile ? 375 : 900);
+  const current = useRef(width);
+
+  useEffect(() => {
+    const target = mobile ? 375 : 900;
+    const from = current.current;
+    if (from === target) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      current.current = target;
+      setWidth(target);
+      return;
+    }
+    const started = performance.now();
+    let frame = 0;
+    const animate = (now: number) => {
+      const progress = Math.min(1, (now - started) / 360);
+      const eased =
+        progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
+      current.current = from + (target - from) * eased;
+      setWidth(current.current);
+      if (progress < 1) frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, [mobile]);
+
+  return width;
+}
+
 function EmailPreview({
   selected,
   locale,
   mobile,
+  width,
   onDeviceChange,
 }: {
   selected: Template | undefined;
   locale: Locale;
   mobile: boolean;
+  width: number;
   onDeviceChange: (mobile: boolean) => void;
 }) {
   const container = useRef<HTMLElement>(null);
@@ -297,7 +335,6 @@ function EmailPreview({
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
-  const width = mobile ? 375 : 900;
   const scale = Math.min(1, size.width / width) || 1;
   return (
     <div className="gallery-preview-layout" style={{ maxWidth: width + 18 }}>
@@ -345,6 +382,7 @@ export default function Gallery() {
   const [mobile, setMobile] = useState(
     () => window.matchMedia("(max-width: 760px)").matches,
   );
+  const previewWidth = usePreviewWidth(mobile);
   const params = new URLSearchParams(hash.slice(1));
   const locale =
     languages.find((language) => language.code === params.get("locale"))
@@ -410,7 +448,14 @@ export default function Gallery() {
           />
         </div>
       </header>
-      <main className="gallery-workspace" data-mobile-preview={mobile}>
+      <main
+        className="gallery-workspace"
+        style={
+          {
+            "--gallery-preview-width": `${previewWidth + 18}px`,
+          } as CSSProperties
+        }
+      >
         <nav
           aria-label="Templates de e-mail"
           className="flex min-h-0 min-w-0 items-start"
@@ -450,6 +495,7 @@ export default function Gallery() {
           selected={selected}
           locale={locale}
           mobile={mobile}
+          width={previewWidth}
           onDeviceChange={setMobile}
         />
       </main>
