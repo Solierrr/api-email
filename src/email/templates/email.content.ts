@@ -7,12 +7,11 @@ interface Content {
   button: string;
   footer: string;
   greeting: string;
-  fallback: string;
 }
 
 const shared: Record<
   EmailLocale,
-  Pick<Content, "footer" | "greeting" | "fallback">
+  Pick<Content, "footer" | "greeting">
 > = translations.shared;
 const templates: Record<
   EmailLocale,

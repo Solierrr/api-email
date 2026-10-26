@@ -1,5 +1,7 @@
 # API Email
 
+[Galeria de e-mails](https://solierrr.github.io/api-email/): exemplos estáticos dos nove templates em português, inglês e espanhol, com prévia desktop/mobile. A publicação acompanha a branch `qa` e usa apenas dados fictícios.
+
 Serviço interno de e-mails transacionais da Solaria em TypeScript/Node.js, com Fastify, React Email e Nodemailer. A API HTTP é reutilizável por Java/Kotlin e TypeScript.
 
 ## Contrato

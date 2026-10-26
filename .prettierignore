@@ -1,6 +1,7 @@
 node_modules
 dist
 coverage
+gallery-dist
 package-lock.json
 CHANGELOG.md
 LICENSE
