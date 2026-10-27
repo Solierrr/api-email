@@ -42,6 +42,27 @@ const send = (body: unknown = payload, apiKey = key, url = "/emails") =>
   });
 
 describe("Email HTTP contract", () => {
+  it("exposes Swagger with a protected send and preview contract", async () => {
+    const response = await app.inject({ url: "/openapi.json" });
+    expect(response.statusCode).toBe(200);
+    const document = response.json();
+    expect(
+      document.components.schemas.EmailRequest.properties.template.enum,
+    ).toContain("email-verification");
+    expect(document.paths["/emails"].post.security).toEqual([
+      { ServiceKey: [] },
+    ]);
+    expect(document.paths["/emails/preview"].post.security).toEqual([
+      { ServiceKey: [] },
+    ]);
+    expect(document.components.securitySchemes.ServiceKey.name).toBe(
+      "X-API-Key",
+    );
+    expect(response.body).not.toContain(key);
+    const docs = await app.inject({ url: "/docs/" });
+    expect(docs.statusCode).toBe(200);
+    expect(docs.body).toContain("swagger-ui");
+  });
   it("exposes liveness without disclosing SMTP configuration", async () => {
     const response = await app.inject({ url: "/health" });
     expect(response.json()).toEqual({ status: "ok" });

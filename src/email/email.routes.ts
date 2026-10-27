@@ -54,7 +54,7 @@ export function registerEmailRoutes(
           );
           request.log.info(
             { template: parsed.data.template, messageId: result.messageId },
-            "Email accepted by SMTP",
+            "Email accepted by provider",
           );
           return result;
         } catch {

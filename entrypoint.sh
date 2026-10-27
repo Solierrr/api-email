@@ -17,7 +17,12 @@ if [ -n "${INFISICAL_CLIENT_ID:-}" ] && [ -n "${INFISICAL_CLIENT_SECRET:-}" ]; t
     --projectId="${INFISICAL_PROJECT_ID:-2296d19c-5f3b-41e1-afa3-fcde39966a71}" \
     --env="${INFISICAL_ENV:-qa}" \
     --path=/ \
-    -- "$@"
+    -- infisical run \
+      --token="$INFISICAL_TOKEN" \
+      --projectId="${INFISICAL_PROJECT_ID:-2296d19c-5f3b-41e1-afa3-fcde39966a71}" \
+      --env="${INFISICAL_ENV:-qa}" \
+      --path=/email \
+      -- "$@"
 fi
 
 exec "$@"

@@ -6,12 +6,12 @@ Serviço interno de e-mails transacionais da Solaria em TypeScript/Node.js, com 
 
 ## Contrato
 
-| Método | Rota            | Autenticação | Resultado                                            |
-| ------ | --------------- | ------------ | ---------------------------------------------------- |
-| GET    | /health         | pública      | Processo HTTP em execução                            |
-| GET    | /ready          | pública      | SMTP acessível; 503 se indisponível                  |
-| POST   | /emails/preview | X-API-Key    | subject, html e text sem envio                       |
-| POST   | /emails         | X-API-Key    | 200 com status accepted e messageId após aceite SMTP |
+| Método | Rota            | Autenticação | Resultado                                                   |
+| ------ | --------------- | ------------ | ----------------------------------------------------------- |
+| GET    | /health         | pública      | Processo HTTP em execução                                   |
+| GET    | /ready          | pública      | Transporte acessível; 503 se indisponível                   |
+| POST   | /emails/preview | X-API-Key    | subject, html e text sem envio                              |
+| POST   | /emails         | X-API-Key    | 200 com status accepted e messageId após aceite do provedor |
 
 ```json
 {
@@ -31,7 +31,18 @@ Exemplos editáveis ficam diretamente em preview/. Execute `npm run preview:seed
 
 Erros: 400 INVALID_REQUEST/INVALID_ACTION_URL, 401 UNAUTHORIZED, 413 para corpo maior que 16 KiB, 503 EMAIL_SEND_FAILED. Erros não revelam credenciais, links ou detalhes SMTP; requestId identifica a chamada.
 
-**accepted significa aceite SMTP, não entrega na caixa postal.** Envio síncrono sem fila, retry automático, histórico ou idempotência. Timeout pode ocorrer após aceite; repetir pode duplicar o e-mail. idempotencyKey não faz parte deste contrato.
+**accepted significa aceite do provedor, não entrega na caixa postal.** Envio síncrono sem fila, retry automático, histórico ou idempotência. Timeout pode ocorrer após aceite; repetir pode duplicar o e-mail. idempotencyKey não faz parte deste contrato.
+
+## Swagger e envio no QA
+
+O Swagger interativo fica em `/docs/`; o contrato JSON está em `/openapi.json`.
+Clique em **Authorize** e informe a chave interna `EMAIL_API_KEY` (ou seu nome canônico no cofre, `SERVICE_KEY_API_EMAIL`). A chave do Brevo fica apenas no servidor.
+
+Use `POST /emails/preview` para conferir o template sem enviar. Para envio real, use `POST /emails`, troque `to` pelo seu e-mail e escolha um dos nove templates em `template`. `locale` e `data` seguem o mesmo contrato acima. No QA, `actionUrl` deve usar uma origem HTTPS de `EMAIL_ALLOWED_ORIGINS`, como `https://solarianetwork.site`.
+
+O transporte é selecionado por `EMAIL_TRANSPORT`: `smtp` (padrão, para Mailpit local) ou `brevo` (HTTPS, para QA/produção). Brevo exige `BREVO_API_KEY` e remetente autorizado em `EMAIL_FROM`; não exige variáveis SMTP. Os templates continuam sendo renderizados neste serviço.
+
+`GET /ready` verifica acesso ao transporte sem enviar mensagens. No Brevo, verifica a API transacional; validação do remetente e entrega efetiva também dependem da configuração do provedor. Se houver restrição por IP, autorize as faixas de saída do serviço Render no Brevo.
 
 ## Consumidores
 

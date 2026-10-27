@@ -1,12 +1,18 @@
 import Fastify from "fastify";
 import type { EmailConfig } from "./config/config.js";
 import { createSmtpTransport } from "./config/smtp.js";
+import { createBrevoTransport } from "./config/brevo.js";
+import swagger from "@fastify/swagger";
+import swaggerUi from "@fastify/swagger-ui";
+import { emailApiDocument } from "./email/email.openapi.js";
 import { registerEmailRoutes } from "./email/email.routes.js";
 import type { EmailTransport } from "./email/email.service.js";
 
 export function buildApp(
   config: EmailConfig,
-  transport: EmailTransport = createSmtpTransport(config),
+  transport: EmailTransport = config.EMAIL_TRANSPORT === "brevo"
+    ? createBrevoTransport(config)
+    : createSmtpTransport(config),
   logging = true,
 ) {
   const app = Fastify({
@@ -23,6 +29,16 @@ export function buildApp(
         }
       : false,
   });
+  app.register(swagger, {
+    mode: "static",
+    specification: { document: emailApiDocument },
+  });
+  app.register(swaggerUi, {
+    routePrefix: "/docs",
+    staticCSP: true,
+    uiConfig: { persistAuthorization: false, validatorUrl: null },
+  });
+  app.get("/openapi.json", async () => emailApiDocument);
   app.get("/health", async () => ({ status: "ok" }));
   app.get("/ready", async (_request, reply) => {
     try {

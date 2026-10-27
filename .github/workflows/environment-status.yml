@@ -11,4 +11,4 @@ jobs:
     with:
       environment: QA
       check: http
-      url: https://api-email-6swz.onrender.com
+      url: https://api-email-6swz.onrender.com/ready

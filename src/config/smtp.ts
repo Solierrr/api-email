@@ -3,6 +3,7 @@ import type { EmailConfig } from "./config.js";
 import type { EmailTransport } from "../email/email.service.js";
 
 export function createSmtpTransport(config: EmailConfig): EmailTransport {
+  if (!config.SMTP_HOST) throw new Error("SMTP_HOST is required");
   const transport = nodemailer.createTransport({
     host: config.SMTP_HOST,
     port: config.SMTP_PORT,
