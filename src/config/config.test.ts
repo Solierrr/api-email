@@ -58,3 +58,18 @@ it("keeps documentation on by default and parses the CORS origins", () => {
     false,
   );
 });
+it("selects Brevo without SMTP and validates the transport settings", () => {
+  const brevo = readConfig({
+    ...env,
+    SMTP_HOST: undefined,
+    EMAIL_TRANSPORT: "brevo",
+    BREVO_API_KEY: "provider-test-key",
+  });
+  expect(brevo.EMAIL_TRANSPORT).toBe("brevo");
+  expect(() => readConfig({ ...env, EMAIL_TRANSPORT: "brevo" })).toThrow(
+    "BREVO_API_KEY",
+  );
+  expect(() => readConfig({ ...env, SMTP_HOST: undefined })).toThrow(
+    "SMTP_HOST",
+  );
+});

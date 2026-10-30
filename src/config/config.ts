@@ -24,7 +24,9 @@ const schema = z.object({
     .default("http://localhost:3000,http://localhost:5173"),
   EMAIL_FROM: z.email(),
   EMAIL_ALLOWED_ORIGINS: z.string().min(1),
-  SMTP_HOST: z.string().min(1),
+  EMAIL_TRANSPORT: z.enum(["smtp", "brevo"]).default("smtp"),
+  BREVO_API_KEY: z.string().optional(),
+  SMTP_HOST: z.string().min(1).optional(),
   SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
   SMTP_SECURE: boolean.default(false),
   SMTP_USER: z.string().optional(),
@@ -43,6 +45,10 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env) {
     throw new Error(`Invalid configuration: ${fields}`);
   }
   const config = parsed.data;
+  if (config.EMAIL_TRANSPORT === "brevo" && !config.BREVO_API_KEY)
+    throw new Error("Invalid configuration: BREVO_API_KEY");
+  if (config.EMAIL_TRANSPORT === "smtp" && !config.SMTP_HOST)
+    throw new Error("Invalid configuration: SMTP_HOST");
   if (Boolean(config.SMTP_USER) !== Boolean(config.SMTP_PASSWORD))
     throw new Error("SMTP_USER and SMTP_PASSWORD must be configured together");
   const allowedOrigins = config.EMAIL_ALLOWED_ORIGINS.split(",").map((value) =>
