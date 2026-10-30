@@ -2,7 +2,7 @@ import { buildApp } from "./app.js";
 import { readConfig } from "./config/config.js";
 
 const config = readConfig();
-const app = buildApp(config);
+const app = await buildApp(config);
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => {
     void app.close().catch(() => {

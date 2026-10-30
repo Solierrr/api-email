@@ -3,6 +3,10 @@ import { z } from "zod";
 const boolean = z
   .enum(["true", "false"])
   .transform((value) => value === "true");
+const serviceKey = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z.string().min(32).max(256).optional(),
+);
 const schema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
@@ -10,7 +14,14 @@ const schema = z.object({
   APP_ENV: z.enum(["dev", "qa", "prod"]),
   HOST: z.string().min(1).default("127.0.0.1"),
   PORT: z.coerce.number().int().min(1).max(65535).default(8083),
-  EMAIL_API_KEY: z.string().min(32).max(256),
+  SERVICE_KEY_API_CORE: serviceKey,
+  SERVICE_KEY_API_AUTH: serviceKey,
+  EMAIL_API_KEY: serviceKey,
+  DOCS_ENABLED: boolean.default(true),
+  CORS_ALLOWED_ORIGINS: z
+    .string()
+    .min(1)
+    .default("http://localhost:3000,http://localhost:5173"),
   EMAIL_FROM: z.email(),
   EMAIL_ALLOWED_ORIGINS: z.string().min(1),
   SMTP_HOST: z.string().min(1),
@@ -37,6 +48,13 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env) {
   const allowedOrigins = config.EMAIL_ALLOWED_ORIGINS.split(",").map((value) =>
     value.trim(),
   );
+  const corsOrigins = config.CORS_ALLOWED_ORIGINS.split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const serviceKeys = {
+    "api-core": config.SERVICE_KEY_API_CORE,
+    "api-auth": config.SERVICE_KEY_API_AUTH,
+  };
   for (const origin of allowedOrigins) {
     let url: URL;
     try {
@@ -51,7 +69,7 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env) {
     )
       throw new Error("Invalid EMAIL_ALLOWED_ORIGINS");
   }
-  return { ...config, allowedOrigins };
+  return { ...config, allowedOrigins, corsOrigins, serviceKeys };
 }
 
 export type EmailConfig = ReturnType<typeof readConfig>;

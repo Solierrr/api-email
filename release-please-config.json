@@ -5,7 +5,14 @@
   "pull-request-footer": "\n\n---\nDepois de validar os checks, comente `/release` para publicar.",
   "packages": {
     ".": {
-      "release-type": "node"
+      "release-type": "node",
+      "package-name": "api-email",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "openapi.yaml"
+        }
+      ]
     }
   }
 }
