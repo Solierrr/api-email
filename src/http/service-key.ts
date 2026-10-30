@@ -17,7 +17,11 @@ export function serviceKeyGuard(config: EmailConfig) {
     : undefined;
 
   function identify(request: FastifyRequest): ServiceCaller | undefined {
-    const key = request.headers["x-service-key"];
+    // Grafana keeps only the Authorization credential encrypted, so Bearer carries the same service key
+    const bearer = /^Bearer (\S+)$/.exec(
+      request.headers.authorization ?? "",
+    )?.[1];
+    const key = request.headers["x-service-key"] ?? bearer;
     if (typeof key === "string") {
       const received = digest(key);
       return callers.find(([, expected]) =>

@@ -51,7 +51,7 @@ export async function registerOpenApi(
       info: {
         title: "Solaria — api-email",
         description:
-          "Renderiza e envia e-mails transacionais a partir de modelos fixos, em pt-BR, en-US e es-ES. É chamado só por outros serviços (api-core e api-auth): autentique com a chave de serviço no cabeçalho X-Service-Key.",
+          "Renderiza e envia e-mails transacionais a partir de modelos fixos, em pt-BR, en-US e es-ES, e recebe os alertas do Grafana para abrir tickets no Jira, avisar a equipe por e-mail e por WhatsApp. É chamado só por outros serviços (api-core e api-auth nos e-mails; o Grafana nos alertas): autentique com a chave de serviço no cabeçalho X-Service-Key.",
         version: serviceVersion,
         contact: { name: "Solaria", url: "https://github.com/Solierrr" },
         license: {
@@ -69,6 +69,11 @@ export async function registerOpenApi(
           description: "Prévia e envio de e-mails transacionais.",
         },
         {
+          name: "Alertas",
+          description:
+            "Destino dos webhooks do Grafana: ticket no Jira, e-mail e WhatsApp, uma rota por canal, cada uma com prévia.",
+        },
+        {
           name: "Saúde",
           description: "Verificações de vivo e pronto usadas pela plataforma.",
         },
@@ -76,9 +81,11 @@ export async function registerOpenApi(
       components: {
         securitySchemes: {
           serviceKey: { type: "apiKey", in: "header", name: "X-Service-Key" },
+          // The same service key; Grafana stores only the Authorization credential encrypted
+          bearer: { type: "http", scheme: "bearer" },
         },
       },
-      security: [{ serviceKey: [] }],
+      security: [{ serviceKey: [] }, { bearer: [] }],
     },
     refResolver: {
       buildLocalReference: (json, _baseUri, _fragment, index) =>
