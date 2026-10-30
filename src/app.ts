@@ -2,6 +2,7 @@ import cors from "@fastify/cors";
 import Fastify, { type FastifyError } from "fastify";
 import { z } from "zod";
 import type { EmailConfig } from "./config/config.js";
+import { createBrevoTransport } from "./config/brevo.js";
 import { createSmtpTransport } from "./config/smtp.js";
 import { registerEmailRoutes } from "./email/email.routes.js";
 import type { EmailTransport } from "./email/email.service.js";
@@ -35,7 +36,9 @@ const genericByStatus: Record<number, string> = {
 
 export async function buildApp(
   config: EmailConfig,
-  transport: EmailTransport = createSmtpTransport(config),
+  transport: EmailTransport = config.EMAIL_TRANSPORT === "brevo"
+    ? createBrevoTransport(config)
+    : createSmtpTransport(config),
   logging = true,
 ) {
   const app = Fastify({

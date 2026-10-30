@@ -4,12 +4,12 @@ Serviço interno de e-mails transacionais da Solaria em TypeScript/Node.js, com 
 
 ## Contrato
 
-| Método | Rota            | Autenticação  | Resultado                                            |
-| ------ | --------------- | ------------- | ---------------------------------------------------- |
-| GET    | /health         | pública       | Processo HTTP em execução e versão                   |
-| GET    | /ready          | pública       | SMTP acessível; 503 se indisponível                  |
-| POST   | /emails/preview | X-Service-Key | subject, html e text sem envio                       |
-| POST   | /emails         | X-Service-Key | 200 com status accepted e messageId após aceite SMTP |
+| Método | Rota            | Autenticação  | Resultado                                                           |
+| ------ | --------------- | ------------- | ------------------------------------------------------------------- |
+| GET    | /health         | pública       | Processo HTTP em execução e versão                                  |
+| GET    | /ready          | pública       | transporte de e-mail acessível (SMTP ou Brevo); 503 se indisponível |
+| POST   | /emails/preview | X-Service-Key | subject, html e text sem envio                                      |
+| POST   | /emails         | X-Service-Key | 200 com status accepted e messageId após aceite do transporte       |
 
 O contrato OpenAPI é gerado do código: Swagger em `/docs` e contrato em `/openapi.json` (desligados com `DOCS_ENABLED=false`, o caso de PROD), e `openapi.yaml` versionado na raiz, exportado por `make openapi` e conferido no CI. Chamadores aceitos: api-core (`SERVICE_KEY_API_CORE`) e api-auth (`SERVICE_KEY_API_AUTH`).
 
