@@ -24,6 +24,10 @@ Com a API e o Mailpit rodando, execute `npm run preview:seed`. Cada JSON em `ass
 
 O comando valida todos os exemplos pelo endpoint de preview antes de iniciar os envios. Usa SERVICE_KEY_API_CORE do .env, chama apenas a API em loopback e exige APP_ENV=dev com SMTP local na porta 1025. Links devem corresponder a EMAIL_ALLOWED_ORIGINS. Os tokens dos exemplos são fictícios.
 
+## Alertas do Grafana localmente
+
+Defina SERVICE_KEY_GRAFANA no .env (>=32 caracteres) e, para ver os e-mails no Mailpit, ALERT_EMAIL_TO com endereços de teste e ALERT_GRAFANA_URL=http://localhost:3000. As rotas `/alerts/*/preview` funcionam sem as chaves do Jira e do WhatsApp; use as chamadas da pasta `http/alerts/` no Bruno. Para exercitar o Jira ou o WhatsApp sem as contas reais, aponte JIRA_BASE_URL para um receptor local de teste (HTTP só é aceito com APP_ENV=dev). Rotas sem as variáveis do canal respondem 503 CHANNEL_NOT_CONFIGURED.
+
 ## Tudo em Docker
 
 Encerre npm run dev para liberar 8083:

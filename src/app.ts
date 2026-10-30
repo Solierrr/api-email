@@ -4,6 +4,11 @@ import { z } from "zod";
 import type { EmailConfig } from "./config/config.js";
 import { createBrevoTransport } from "./config/brevo.js";
 import { createSmtpTransport } from "./config/smtp.js";
+import {
+  createAlertDependencies,
+  registerAlertRoutes,
+  type AlertDependencies,
+} from "./alerts/alerts.routes.js";
 import { registerEmailRoutes } from "./email/email.routes.js";
 import type { EmailTransport } from "./email/email.service.js";
 import {
@@ -40,6 +45,7 @@ export async function buildApp(
     ? createBrevoTransport(config)
     : createSmtpTransport(config),
   logging = true,
+  alertDependencies: AlertDependencies = createAlertDependencies(config),
 ) {
   const app = Fastify({
     bodyLimit: 16384,
@@ -166,6 +172,7 @@ export async function buildApp(
     },
   );
   registerEmailRoutes(app, config, transport);
+  registerAlertRoutes(app, config, transport, alertDependencies);
   app.addHook("onClose", async () => transport.close());
   return app;
 }
