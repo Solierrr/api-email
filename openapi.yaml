@@ -4,7 +4,7 @@ info:
   description: "Renderiza e envia e-mails transacionais a partir de modelos fixos,
     em pt-BR, en-US e es-ES. É chamado só por outros serviços (api-core e
     api-auth): autentique com a chave de serviço no cabeçalho X-Service-Key."
-  version: 0.2.0 # x-release-please-version
+  version: 0.3.0 # x-release-please-version
   contact:
     name: Solaria
     url: https://github.com/Solierrr

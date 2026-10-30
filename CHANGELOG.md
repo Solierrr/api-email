@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.0](https://github.com/Solierrr/api-email/compare/v0.2.0...v0.3.0) (2026-10-30)
+
+
+### Features
+
+* implement transactional email service ([#2](https://github.com/Solierrr/api-email/issues/2)) ([556bc68](https://github.com/Solierrr/api-email/commit/556bc686036f3c5a06334c68afc2c99dba21315c))
+* standardize the http contract with openapi, problem details and service keys ([#14](https://github.com/Solierrr/api-email/issues/14)) ([ee525ce](https://github.com/Solierrr/api-email/commit/ee525ce7601e54b4b514ecea001992003b113fb1))
+* support brevo delivery ([#16](https://github.com/Solierrr/api-email/issues/16)) ([3c17c14](https://github.com/Solierrr/api-email/commit/3c17c145719c59060d4982a68d753a456691a2c1))
+
 ## [0.2.0](https://github.com/Solierrr/generic-template/compare/v0.1.1...v0.2.0) (2026-10-02)
 
 
