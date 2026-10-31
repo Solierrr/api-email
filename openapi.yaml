@@ -19,7 +19,7 @@ components:
       type: apiKey
       in: header
       name: X-Service-Key
-    bearer:
+    bearerAuth:
       type: http
       scheme: bearer
   schemas:
@@ -1219,7 +1219,7 @@ servers:
     description: Local
 security:
   - serviceKey: []
-  - bearer: []
+  - bearerAuth: []
 tags:
   - name: E-mails
     description: Prévia e envio de e-mails transacionais.
