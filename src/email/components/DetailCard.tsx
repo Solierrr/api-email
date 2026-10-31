@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Img, Section, Text } from "react-email";
+import { designTokens } from "@solaria.network/web-lib/tokens";
 
 export function DetailCard({
   label,
@@ -13,7 +14,10 @@ export function DetailCard({
   children?: ReactNode;
 }) {
   return (
-    <Section className="mt-2 mb-7 rounded-hard border border-solid border-operational-border p-6 text-center font-ui">
+    <Section
+      className="mt-2 mb-7 rounded-hard border border-solid p-6 text-center font-ui"
+      style={{ borderColor: designTokens.colors.border }}
+    >
       {image && (
         <Img
           src={image}
@@ -23,7 +27,7 @@ export function DetailCard({
           className="mx-auto mb-5 block max-w-full rounded-medium object-contain"
         />
       )}
-      <Text className="m-0 mb-2.5 text-[11px] font-semi-bold tracking-[1px] text-gray uppercase">
+      <Text className="m-0 mb-2.5 text-xs font-semi-bold text-gray">
         {label}
       </Text>
       {title && (

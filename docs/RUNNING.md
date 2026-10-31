@@ -42,9 +42,23 @@ Sem Docker, configure um capturador SMTP autorizado nas variáveis e use npm run
 
 ## Atualizar o UI kit local
 
-O serviço consome @solierrr/web-lib/email por meio do pacote local em vendor/solierrr-web-lib-0.1.0.tgz. Para atualizar, execute na web-lib `npm run build` e `npm pack --pack-destination ../api-email/vendor`; depois, neste serviço, `npm install ./vendor/solierrr-web-lib-0.1.0.tgz`. Reinicie o serviço e rode `npm run preview:seed`. O pacote local também é copiado no build Docker. Nenhuma publicação npm é necessária.
+O serviço consome `@solaria.network/web-lib/email` por meio do pacote local versionado em `vendor/`. Para atualizar, execute `npm run build` e `npm pack --pack-destination ../api-email/vendor` na `web-lib`, atualize o caminho do tarball em `package.json` e execute `npm install` neste serviço. Reinicie a API e rode `npm run preview:seed`. O Docker copia o diretório `vendor` antes de executar `npm ci`; nenhuma publicação npm é necessária.
 
-## Verificação
+## Galeria estática
+
+Execute `npm run gallery:build` para gerar `gallery-dist/` e `npm run gallery:preview` para abrir a prévia local. O resultado pode ser servido por qualquer servidor HTTP estático. Não é necessário `.env`, API, SMTP ou Mailpit.
+
+O gerador reutiliza `renderEmail`, os componentes de `@solaria.network/web-lib/email` e os exemplos de `assets/mocks/emails/`. Gera os três idiomas para cada template registrado, substitui destinatário e URL de ação por dados de demonstração e desativa os links dentro dos e-mails. A prévia fica em um iframe com sandbox.
+
+A interface em `gallery/` utiliza os componentes de browser da web-lib por meio do alias de desenvolvimento `@solaria.network/gallery-ui`. Esse snapshot separado preserva o pacote de e-mail e seu branding atual. Navbar, menus e seleção de proporção reutilizam `OrganicLogo`, `MenuList`, `MenuItem`, `SurfaceGroup` e `GroupAction`, com CSS compilado pelo Vite/Tailwind. Os assuntos dos templates são curtos e não repetem o nome do projeto.
+
+A navbar mantém a logo no tamanho do sandbox e os acessos GitHub/idioma à direita. O controle de dispositivo pertence à prévia; o contêiner acompanha a largura desktop/mobile. A scrollbar exportada por `@solaria.network/gallery-ui/scrollbar.css` também é aplicada aos HTMLs da galeria, para funcionar dentro do iframe sem alterar os estilos dos e-mails enviados.
+
+As imagens de exemplo ficam em `assets/mocks/images/` (cópias do `mocks-warehouse`); o gerador as publica em `images/` e aponta o `modelImageUrl` do exemplo para elas, usando `GALLERY_BASE_URL` (no workflow, a URL do Pages) ou o endereço padrão de `solierrr.github.io/api-email`.
+
+O workflow `Email gallery` valida a geração em pull requests e publica no GitHub Pages após push em `qa`. O repositório deve ter Pages configurado para GitHub Actions. A galeria é pública e não consulta mensagens recebidas ou credenciais do ambiente QA.
+
+## Verificação do serviço
 
 ```sh
 npm run typecheck

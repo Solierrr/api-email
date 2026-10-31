@@ -9,19 +9,21 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
     "preview:seed": "node --env-file=.env scripts/seed-preview.mjs",
+    "gallery:build": "npm run build && node scripts/build-gallery.mjs && vite build --config gallery/vite.config.ts",
+    "gallery:preview": "vite preview --config gallery/vite.config.ts --host 127.0.0.1",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --project gallery/tsconfig.json",
     "test": "vitest run",
-    "openapi": "tsx scripts/export-openapi.ts",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "openapi": "tsx scripts/export-openapi.ts"
   },
   "dependencies": {
     "@fastify/cors": "11.3.1",
     "@fastify/swagger": "9.9.2",
     "@fastify/swagger-ui": "6.1.2",
-    "@solierrr/web-lib": "file:vendor/solierrr-web-lib-0.1.0.tgz",
+    "@solaria.network/web-lib": "file:vendor/solaria.network-web-lib-0.3.1-email-tabler-footer-v6.tgz",
     "fastify": "5.12.5",
     "nodemailer": "10.0.16",
     "react": "19.3.0",
@@ -29,12 +31,27 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@solaria.network/gallery-ui": "file:vendor/solaria.network-web-lib-0.5.0.tgz",
+    "@tabler/icons-react": "3.49.0",
+    "@tailwindcss/vite": "4.3.3",
     "@types/node": "24.19.1",
     "@types/nodemailer": "8.0.2",
     "@types/react": "19.3.0",
+    "@types/react-dom": "19.2.7",
+    "@vitejs/plugin-react": "6.1.1",
+    "i18next": "26.4.2",
+    "lucide-react": "1.49.0",
+    "openapi-types": "12.1.3",
     "prettier": "3.9.9",
+    "react-dom": "19.3.0",
+    "react-i18next": "17.0.15",
+    "react-icons": "5.7.0",
+    "react-router-dom": "7.18.4",
+    "react-speech-recognition": "4.0.1",
+    "tailwindcss": "4.3.3",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
+    "vite": "8.3.4",
     "vitest": "4.1.11"
   }
 }

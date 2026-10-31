@@ -22,7 +22,7 @@ const previewSchema = z.object({
 });
 
 const bodyDescription =
-  "Um destinatário por chamada. Campos desconhecidos são recusados. Regras por modelo: company-invitation e company-email-verification exigem data.companyName; project-invitation exige data.projectName, data.projectRole e data.invitationExpiresAt; solar-model-approved exige data.modelName; registration-rejected exige data.reason; todos, menos user-deletion, exigem data.actionUrl, cuja origem precisa estar em EMAIL_ALLOWED_ORIGINS.";
+  "Um destinatário por chamada. Campos desconhecidos são recusados. Regras por modelo: company-invitation e company-email-verification exigem data.companyName; project-invitation exige data.projectName, data.projectRole e data.invitationExpiresAt; solar-model-approved exige data.modelName; registration-rejected exige data.reason; operational-alert exige data.alertPriority, data.alertStatus, data.serviceName, data.environment, data.summary e data.startedAt (data.serviceUrl, data.impact e data.endedAt são opcionais); todos, menos user-deletion, exigem data.actionUrl, cuja origem precisa estar em EMAIL_ALLOWED_ORIGINS.";
 
 function routeSchema(preview: boolean) {
   const errorCodes = [
@@ -105,7 +105,7 @@ export function registerEmailRoutes(
     app.post(
       preview ? "/emails/preview" : "/emails",
       {
-        onRequest: requireCaller("api-core", "api-auth"),
+        onRequest: requireCaller("api-core", "api-auth", "worker-alerts"),
         schema: routeSchema(preview),
       },
       async (request, reply) => {
@@ -146,7 +146,7 @@ export function registerEmailRoutes(
           );
           request.log.info(
             { template: parsed.data.template, messageId: result.messageId },
-            "Email accepted by SMTP",
+            "Email accepted by provider",
           );
           return result;
         } catch {

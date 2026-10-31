@@ -1,0 +1,16 @@
+{
+  "template": "operational-alert",
+  "locale": "pt-BR",
+  "to": "dev@example.com",
+  "data": {
+    "alertPriority": "P2",
+    "alertStatus": "firing",
+    "serviceName": "api-core",
+    "environment": "prod",
+    "summary": "7,1 % das respostas com erro 5xx há 10 min",
+    "impact": "Pelo menos 1 em cada 20 requisições falha há 10 minutos.",
+    "startedAt": "2026-10-31T18:00:00Z",
+    "actionUrl": "https://grafana.solarianetwork.site/d/service-detail?var-environment=prod&var-service=core",
+    "serviceUrl": "https://core.solarianetwork.site"
+  }
+}

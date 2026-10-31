@@ -31,11 +31,11 @@ src/
 
 Config valida variáveis antes de iniciar. Schema define contrato estrito e verifica links. Routes declara o schema OpenAPI de cada rota (gerado do schema zod, que continua sendo a única validação) e converte falhas em HTTP. http/ reúne o contrato OpenAPI e o Swagger, o formato de erro ProblemDetail e a autenticação por chave de serviço. Service renderiza e aguarda SMTP. Templates compartilham layout e textos. App permite transporte injetado em testes; server gerencia HTTP e shutdown.
 
-React Email gera HTML de e-mail e texto simples. Nome/empresa são escapados pelo React; não existe entrada de HTML arbitrário. Layout, texto e ação vêm de @solierrr/web-lib/email, com estilos inline baseados nos tokens do UI kit compartilhado. O serviço mantém o conteúdo dos templates e idiomas; a lib mantém os componentes visuais. A entrada de browser da lib não é importada no serviço.
+React Email gera HTML de e-mail e texto simples. Nome/empresa são escapados pelo React; não existe entrada de HTML arbitrário. Layout, texto e ação vêm de @solaria.network/web-lib/email, com estilos inline baseados nos tokens do UI kit compartilhado. O serviço mantém o conteúdo dos templates e idiomas; a lib mantém os componentes visuais. A entrada de browser da lib não é importada no serviço.
 
 Remetente vem da configuração e o SMTP tem timeouts. Cada chamador tem a própria chave (X-Service-Key, SERVICE_KEY_API_CORE e SERVICE_KEY_API_AUTH), comparada em tempo constante; sem nenhuma chave configurada, tudo é recusado. A chave legada EMAIL_API_KEY, se configurada, é aceita em X-API-Key como api-core só até o api-core enviar X-Service-Key. Logs registram rota/template/messageId sem destinatários, corpo, links de ação ou credenciais. Não há login de pessoas no serviço; o CORS só libera as origens de CORS_ALLOWED_ORIGINS, para o web-sandbox ler o contrato no QA.
 
-O layout compartilhado centraliza o conteúdo e usa o branding oficial do Solaria, com laterais estáticas do padrão dos formulários e fundo uniforme. Tipografia vem dos tokens da lib, com Plus Jakarta Sans do Google Fonts e fallback sans-serif. O SVG original é convertido para PNG no build da lib. Preview renderiza as imagens incorporadas como data URI; attachDataUrls no transporte SMTP converte as imagens em partes CID, sem carregar arquivos/URLs externos no servidor. Payloads não aceitam anexos.
+O layout compartilhado segue a composição centralizada das telas de acesso: logo animada, título, conteúdo e ação principal, sobre o fundo uniforme com canvas nas laterais. Tipografia vem dos tokens da lib, com Plus Jakarta Sans do Google Fonts e fallback sans-serif. A logo animada é enviada como GIF incorporado; o primeiro quadro precisa funcionar como marca estática para clientes que não reproduzem animação. Preview renderiza as imagens incorporadas como data URI; attachDataUrls no transporte SMTP converte as imagens em partes CID, sem carregar arquivos/URLs externos no servidor. Payloads não aceitam anexos.
 
 DetailCard organiza empresa, motivo de reprovação e modelo aprovado. O modelo aceita modelManufacturer, modelPowerWatts e modelImageUrl opcionais; a imagem deve ser HTTPS sem credenciais e é carregada pelo cliente de e-mail, nunca pelo servidor. Sem imagem, usa placeholder incorporado derivado do asset do web-app. Fabricante e potência não são inventados quando ausentes.
 
@@ -51,11 +51,15 @@ DetailCard organiza empresa, motivo de reprovação e modelo aprovado. O modelo 
 
 ## Novo template
 
-Os componentes usam classes Tailwind dentro do EmailLayout. O wrapper Tailwind do React Email compila essas classes para estilos inline, com tema vindo de @solierrr/web-lib/tokens e unidades de spacing em pixels. Não carregar o CSS de browser da lib nos templates. O body, container e centro usam o token operational-surface (#fafafa).
+Os componentes usam classes Tailwind dentro do EmailLayout. O wrapper Tailwind do React Email compila essas classes para estilos inline, com tema vindo de @solaria.network/web-lib/tokens e unidades de spacing em pixels. Não carregar o CSS de browser da lib nos templates. O body, container e centro usam o token operational-surface (#fafafa).
 
 1. Adicionar nome e validação em email.schema.ts.
 2. Adicionar textos nos três idiomas em templates/email.content.ts.
-3. Reutilizar EmailLayout/EmailText/EmailAction de @solierrr/web-lib/email e compor o corpo.
+3. Reutilizar EmailLayout/EmailText/EmailAction de @solaria.network/web-lib/email e compor o corpo.
 4. Cobrir contrato, escaping e renderização; incluir exemplo Bruno.
+
+Padrão visual dos modelos: o corpo é só texto. Nada de bullets feitos com `div`, espaçamento entre palavras ou blocos para montar listas; cada informação é um parágrafo (`EmailText`), como em `Projeto: X` ou `1. Abrir o dashboard.`. As exceções autorizadas são o cartão que contém uma imagem (o modelo solar e a logo da empresa, via `DetailCard`) e o botão centralizado. Rótulos nunca em caixa alta nem com letras espaçadas. Um teste (`plain-text.test.ts`) renderiza todos os exemplos nos três idiomas e falha se aparecer `text-transform: uppercase` ou `letter-spacing`. 5. Todo template novo entra na galeria: criar o exemplo em `assets/mocks/emails/<template>.json` (o gerador lê um por template) e o ícone em `gallery/Gallery.tsx`. Imagens de exemplo vêm do `mocks-warehouse` e ficam em `assets/mocks/images/`; a galeria as publica em `/images/`.
+
+O template `operational-alert` é o aviso operacional da plataforma: quem manda (o `worker-alerts`) envia o resumo, o impacto e os primeiros passos já prontos, e o template só aplica o layout e traduz os rótulos. O assunto é montado dos dados (`[P2] core (prod): resumo`, com `[RESOLVIDO]` quando o alerta volta). A origem do `actionUrl` (o dashboard do Grafana) precisa estar em `EMAIL_ALLOWED_ORIGINS`.
 
 Não gera tokens, consulta usuários ou decide permissões. Usar rede interna e HTTPS para chamadas remotas; cada servidor chamador usa a própria chave. Fila durável, deduplicação, identidade por consumidor e entrega confirmada exigem evolução explícita. Não há fila em memória fingindo persistência.

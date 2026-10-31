@@ -21,6 +21,7 @@ const schema = z.object({
   SERVICE_KEY_API_CORE: serviceKey,
   SERVICE_KEY_API_AUTH: serviceKey,
   SERVICE_KEY_GRAFANA: serviceKey,
+  SERVICE_KEY_WORKER_ALERTS: serviceKey,
   EMAIL_API_KEY: serviceKey,
   DOCS_ENABLED: boolean.default(true),
   CORS_ALLOWED_ORIGINS: z
@@ -162,6 +163,7 @@ function readAlerts(config: z.infer<typeof schema>, allowedHttp: boolean) {
 export function readConfig(env: NodeJS.ProcessEnv = process.env) {
   const parsed = schema.safeParse({
     ...env,
+    EMAIL_API_KEY: env.EMAIL_API_KEY ?? env.SERVICE_KEY_API_EMAIL,
     APP_ENV: env.APP_ENV ?? (env.NODE_ENV === "production" ? "prod" : "dev"),
   });
   if (!parsed.success) {
@@ -187,6 +189,7 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env) {
     "api-core": config.SERVICE_KEY_API_CORE,
     "api-auth": config.SERVICE_KEY_API_AUTH,
     grafana: config.SERVICE_KEY_GRAFANA,
+    "worker-alerts": config.SERVICE_KEY_WORKER_ALERTS,
   };
   for (const origin of allowedOrigins) {
     let url: URL;

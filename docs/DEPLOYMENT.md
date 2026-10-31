@@ -2,22 +2,23 @@
 
 Docker multi-stage Node.js 24: TypeScript compilado, dependências runtime e usuário node sem privilégios. `docker build -t solaria-api-email:local .` não inclui segredos.
 
-| Variável              | Dev                        | QA/prod                                                             |
-| --------------------- | -------------------------- | ------------------------------------------------------------------- |
-| NODE_ENV              | development                | production                                                          |
-| APP_ENV               | dev                        | qa ou prod                                                          |
-| HOST                  | 127.0.0.1 (Docker 0.0.0.0) | 0.0.0.0                                                             |
-| PORT                  | 8083                       | porta da plataforma                                                 |
-| SERVICE_KEY_API_CORE  | aleatória >=32 caracteres  | chave do api-core em /service-keys do Infisical                     |
-| SERVICE_KEY_API_AUTH  | opcional, >=32 caracteres  | chave do api-auth em /service-keys do Infisical                     |
-| EMAIL_API_KEY         | vazia                      | legado: aceita X-API-Key como api-core até ele enviar X-Service-Key |
-| DOCS_ENABLED          | true                       | true no QA, false em PROD                                           |
-| CORS_ALLOWED_ORIGINS  | localhost:3000 e 5173      | inclui a origem do web-sandbox no QA                                |
-| EMAIL_FROM            | noreply@solaria.local      | remetente autorizado                                                |
-| EMAIL_ALLOWED_ORIGINS | http://localhost:5173      | origens HTTPS separadas por vírgula                                 |
-| SMTP_HOST/PORT        | localhost:1025             | host/porta do provedor                                              |
-| SMTP_SECURE           | false                      | true TLS direto (tipicamente 465), false STARTTLS (tipicamente 587) |
-| SMTP_USER/PASSWORD    | vazios                     | par de credenciais quando exigido                                   |
+| Variável                  | Dev                        | QA/prod                                                                                       |
+| ------------------------- | -------------------------- | --------------------------------------------------------------------------------------------- |
+| NODE_ENV                  | development                | production                                                                                    |
+| APP_ENV                   | dev                        | qa ou prod                                                                                    |
+| HOST                      | 127.0.0.1 (Docker 0.0.0.0) | 0.0.0.0                                                                                       |
+| PORT                      | 8083                       | porta da plataforma                                                                           |
+| SERVICE_KEY_API_CORE      | aleatória >=32 caracteres  | chave do api-core em /service-keys do Infisical                                               |
+| SERVICE_KEY_API_AUTH      | opcional, >=32 caracteres  | chave do api-auth em /service-keys do Infisical                                               |
+| SERVICE_KEY_WORKER_ALERTS | opcional, >=32 caracteres  | chave do worker-alerts em /service-keys do Infisical; pode chamar /emails (aviso operacional) |
+| EMAIL_API_KEY             | vazia                      | legado: aceita X-API-Key como api-core até ele enviar X-Service-Key                           |
+| DOCS_ENABLED              | true                       | true no QA, false em PROD                                                                     |
+| CORS_ALLOWED_ORIGINS      | localhost:3000 e 5173      | inclui a origem do web-sandbox no QA                                                          |
+| EMAIL_FROM                | noreply@solaria.local      | remetente autorizado                                                                          |
+| EMAIL_ALLOWED_ORIGINS     | http://localhost:5173      | origens HTTPS separadas por vírgula                                                           |
+| SMTP_HOST/PORT            | localhost:1025             | host/porta do provedor                                                                        |
+| SMTP_SECURE               | false                      | true TLS direto (tipicamente 465), false STARTTLS (tipicamente 587)                           |
+| SMTP_USER/PASSWORD        | vazios                     | par de credenciais quando exigido                                                             |
 
 ### Alertas do Grafana
 

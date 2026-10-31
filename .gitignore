@@ -69,5 +69,6 @@ Desktop.ini
 node_modules/
 dist/
 coverage/
+gallery-dist/
 .sdd/
 specs/
