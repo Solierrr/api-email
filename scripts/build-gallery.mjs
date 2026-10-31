@@ -11,7 +11,7 @@ const locales = ["pt-BR", "en-US", "es-ES"];
 // em modelImageUrl, então a galeria publica as cópias e aponta para elas. A chave é o ID do catálogo
 // que o mock usa na URL do Cloudinary (ver assets/mocks/README.md).
 const galleryBaseUrl = (
-  process.env.GALLERY_BASE_URL ?? "https://solierrr.github.io/api-email"
+  process.env.GALLERY_BASE_URL || "https://solierrr.github.io/api-email"
 ).replace(/\/+$/, "");
 const mockImages = { "solar-panels-f2b8091a5514": "R9XADX.webp" };
 const scrollbarCss = await readFile(
