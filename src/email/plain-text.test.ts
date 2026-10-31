@@ -48,12 +48,27 @@ ${email.html}`;
       }
     },
   );
+  it.each(emailTemplates)(
+    "%s does not name the project in the text, in any language",
+    async (template) => {
+      for (const locale of ["pt-BR", "en-US", "es-ES"] as const) {
+        const request = emailSchema.parse({ ...mock(template), locale });
+        const { subject, text } = await renderEmail(request);
+        // Endereços e URLs ficam de fora: o domínio é a única referência permitida
+        const words = `${subject}
+${text}`
+          .replace(/https?:\/\/\S+/g, "")
+          .replace(/\S+@\S+/g, "");
+        expect(words).not.toMatch(/solaria|solier/i);
+      }
+    },
+  );
   it("shows the company name as plain text when there is no logo", async () => {
     const request = mock("company-invitation");
     delete (request.data as Record<string, unknown>).companyLogoUrl;
     const { html, text } = await renderEmail(request);
     expect(images(html)).toBe(await layoutImages());
-    expect(text).toContain("Empresa: Solaria Energia");
+    expect(text).toContain("Empresa: Aurora Energia");
   });
   it("shows the company card with the logo when there is one", async () => {
     for (const template of [
@@ -94,4 +109,15 @@ describe("company logo contract", () => {
     });
     expect(result.success).toBe(false);
   });
+});
+
+describe("text version", () => {
+  it.each(emailTemplates)(
+    "%s keeps the headings in normal case in the plain text",
+    async (template) => {
+      const { text } = await renderEmail(mock(template));
+      const firstLine = text.split("\n")[0]!.trim();
+      expect(firstLine).not.toBe(firstLine.toUpperCase());
+    },
+  );
 });
