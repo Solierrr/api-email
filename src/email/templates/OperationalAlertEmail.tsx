@@ -17,6 +17,7 @@ const labels: Record<
     firing: string;
     resolved: string;
     service: string;
+    environment: string;
     started: string;
     ended: string;
     impact: string;
@@ -27,6 +28,7 @@ const labels: Record<
     firing: "Alerta",
     resolved: "Alerta resolvido",
     service: "no serviço",
+    environment: "em",
     started: "Início",
     ended: "Fim",
     impact: "Impacto provável",
@@ -36,6 +38,7 @@ const labels: Record<
     firing: "Alert",
     resolved: "Alert resolved",
     service: "on service",
+    environment: "in",
     started: "Started",
     ended: "Ended",
     impact: "Likely impact",
@@ -45,12 +48,36 @@ const labels: Record<
     firing: "Alerta",
     resolved: "Alerta resuelta",
     service: "en el servicio",
+    environment: "en",
     started: "Inicio",
     ended: "Fin",
     impact: "Impacto probable",
     timezone: "hora de Brasilia",
   },
 };
+
+// O ambiente por extenso, no idioma do e-mail; um ambiente fora da lista aparece com o próprio nome
+const environments: Record<EmailLocale, Record<string, string>> = {
+  "pt-BR": {
+    prod: "ambiente produtivo",
+    qa: "ambiente de QA",
+    dev: "ambiente de desenvolvimento",
+  },
+  "en-US": {
+    prod: "production environment",
+    qa: "QA environment",
+    dev: "development environment",
+  },
+  "es-ES": {
+    prod: "entorno productivo",
+    qa: "entorno de QA",
+    dev: "entorno de desarrollo",
+  },
+};
+const environmentName = (locale: EmailLocale, environment: string) =>
+  environments[locale][environment] ??
+  { "pt-BR": "ambiente", "en-US": "environment", "es-ES": "entorno" }[locale] +
+    ` ${environment}`;
 
 // Aviso interno da plataforma, só em texto: quem manda (o worker-alerts) escreve o resumo e o impacto
 // já prontos; o template traduz os rótulos e aplica o layout. A única exceção visual é o botão. Sem
@@ -88,7 +115,8 @@ export default function OperationalAlertEmail({
           ) : (
             data.serviceName
           )}{" "}
-          ({data.environment})
+          {text.environment}{" "}
+          {environmentName(request.locale, data.environment!)}
         </EmailText>
         <EmailText>{data.summary}</EmailText>
         {data.impact && (
@@ -127,6 +155,6 @@ export function alertSubject(request: EmailRequest): string {
           "es-ES": "[RESUELTO] ",
         }[request.locale]
       : "";
-  const subject = `${prefix}[${data.alertPriority}] ${data.serviceName} (${data.environment}): ${data.summary}`;
+  const subject = `${prefix}[${data.alertPriority}] ${data.serviceName} ${labels[request.locale].environment} ${environmentName(request.locale, data.environment!)}: ${data.summary}`;
   return subject.length <= 200 ? subject : `${subject.slice(0, 197)}...`;
 }

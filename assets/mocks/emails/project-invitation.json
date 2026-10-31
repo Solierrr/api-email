@@ -1,7 +1,7 @@
 {
   "template": "project-invitation",
   "locale": "pt-BR",
-  "to": "profissional@solaria.test",
+  "to": "profissional@example.com",
   "data": {
     "name": "Marina",
     "projectName": "Instalação solar Residência Aurora",

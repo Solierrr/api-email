@@ -22,24 +22,24 @@
       },
       "user-deletion": {
         "subject": "Exclusão de conta",
-        "introduction": "A exclusão da sua conta foi concluída. Este e-mail confirma o encerramento do seu acesso à Solaria.",
+        "introduction": "A exclusão da sua conta foi concluída. Este e-mail confirma o encerramento do seu acesso.",
         "button": ""
       },
       "registration-approved": {
         "subject": "Cadastro aprovado",
-        "introduction": "A análise do seu cadastro foi concluída e ele foi aprovado. Acesse a Solaria para consultar seu perfil.",
+        "introduction": "A análise do seu cadastro foi concluída e ele foi aprovado. Acesse a plataforma para consultar seu perfil.",
         "button": "Ver meu cadastro",
-        "footer": "Você recebeu este aviso sobre a análise do seu cadastro na Solaria."
+        "footer": "Você recebeu este aviso sobre a análise do seu cadastro."
       },
       "registration-rejected": {
         "subject": "Cadastro reprovado",
-        "introduction": "Seu cadastro não foi aprovado na análise. Confira o motivo abaixo e consulte os detalhes na Solaria.",
+        "introduction": "Seu cadastro não foi aprovado na análise. Confira o motivo abaixo e consulte os detalhes na plataforma.",
         "button": "Ver meu cadastro",
         "footer": "Este aviso se refere à análise do seu cadastro; ele não significa exclusão da sua conta."
       },
       "solar-model-approved": {
         "subject": "Modelo solar aprovado",
-        "introduction": "O modelo de placa solar abaixo foi aprovado na análise da Solaria.",
+        "introduction": "O modelo de placa solar abaixo foi aprovado na análise.",
         "button": "Ver modelo",
         "footer": "Você recebeu este aviso sobre a análise do seu modelo de placa solar."
       },
@@ -51,7 +51,7 @@
       },
       "email-verification": {
         "subject": "Confirmação de e-mail",
-        "introduction": "Confirme seu e-mail para continuar usando sua conta na Solaria.",
+        "introduction": "Confirme seu e-mail para continuar usando sua conta.",
         "button": "Confirmar e-mail"
       },
       "password-reset": {
@@ -61,14 +61,14 @@
       },
       "company-invitation": {
         "subject": "Convite de empresa",
-        "introduction": "Você recebeu um convite para integrar a equipe de uma empresa na Solaria.",
+        "introduction": "Você recebeu um convite para integrar a equipe de uma empresa.",
         "button": "Ver convite"
       },
       "operational-alert": {
         "subject": "Aviso operacional",
         "introduction": "Um aviso automático do monitoramento da plataforma precisa da sua atenção.",
         "button": "Abrir o dashboard do serviço",
-        "footer": "Aviso automático do monitoramento do Solaria. Não responda a este e-mail."
+        "footer": "Aviso automático do monitoramento da plataforma. Não responda a este e-mail."
       }
     },
     "en-US": {
@@ -79,24 +79,24 @@
       },
       "user-deletion": {
         "subject": "Account deletion",
-        "introduction": "Your account deletion is complete. This email confirms the end of your access to Solaria.",
+        "introduction": "Your account deletion is complete. This email confirms the end of your access.",
         "button": ""
       },
       "registration-approved": {
         "subject": "Registration approved",
-        "introduction": "Your registration review is complete and it was approved. Open Solaria to check your profile.",
+        "introduction": "Your registration review is complete and it was approved. Open the platform to check your profile.",
         "button": "View registration",
-        "footer": "You received this notice about your Solaria registration review."
+        "footer": "You received this notice about your registration review."
       },
       "registration-rejected": {
         "subject": "Registration rejected",
-        "introduction": "Your registration was not approved during review. Check the reason below and view the details on Solaria.",
+        "introduction": "Your registration was not approved during review. Check the reason below and view the details on the platform.",
         "button": "View registration",
         "footer": "This registration review notice does not mean your account was deleted."
       },
       "solar-model-approved": {
         "subject": "Solar model approved",
-        "introduction": "The solar panel model below was approved during Solaria review.",
+        "introduction": "The solar panel model below was approved during review.",
         "button": "View model",
         "footer": "You received this notice about your solar panel model review."
       },
@@ -108,7 +108,7 @@
       },
       "email-verification": {
         "subject": "Email confirmation",
-        "introduction": "Confirm your email to continue using your Solaria account.",
+        "introduction": "Confirm your email to continue using your account.",
         "button": "Confirm email"
       },
       "password-reset": {
@@ -118,14 +118,14 @@
       },
       "company-invitation": {
         "subject": "Company invitation",
-        "introduction": "You have been invited to join a company team on Solaria.",
+        "introduction": "You have been invited to join a company team.",
         "button": "View invitation"
       },
       "operational-alert": {
         "subject": "Operational alert",
         "introduction": "An automatic notice from the platform monitoring needs your attention.",
         "button": "Open the service dashboard",
-        "footer": "Automatic notice from Solaria monitoring. Do not reply to this email."
+        "footer": "Automatic notice from the platform monitoring. Do not reply to this email."
       }
     },
     "es-ES": {
@@ -136,24 +136,24 @@
       },
       "user-deletion": {
         "subject": "Eliminación de cuenta",
-        "introduction": "La eliminación de tu cuenta se ha completado. Este correo confirma el fin de tu acceso a Solaria.",
+        "introduction": "La eliminación de tu cuenta se ha completado. Este correo confirma el fin de tu acceso.",
         "button": ""
       },
       "registration-approved": {
         "subject": "Registro aprobado",
-        "introduction": "La revisión de tu registro ha finalizado y fue aprobado. Abre Solaria para consultar tu perfil.",
+        "introduction": "La revisión de tu registro ha finalizado y fue aprobado. Abre la plataforma para consultar tu perfil.",
         "button": "Ver registro",
-        "footer": "Has recibido este aviso sobre la revisión de tu registro en Solaria."
+        "footer": "Has recibido este aviso sobre la revisión de tu registro."
       },
       "registration-rejected": {
         "subject": "Registro rechazado",
-        "introduction": "Tu registro no fue aprobado durante la revisión. Consulta el motivo abajo y los detalles en Solaria.",
+        "introduction": "Tu registro no fue aprobado durante la revisión. Consulta el motivo abajo y los detalles en la plataforma.",
         "button": "Ver registro",
         "footer": "Este aviso de revisión no significa que tu cuenta haya sido eliminada."
       },
       "solar-model-approved": {
         "subject": "Modelo solar aprobado",
-        "introduction": "El modelo de panel solar indicado abajo fue aprobado durante la revisión de Solaria.",
+        "introduction": "El modelo de panel solar indicado abajo fue aprobado durante la revisión.",
         "button": "Ver modelo",
         "footer": "Has recibido este aviso sobre la revisión de tu modelo de panel solar."
       },
@@ -165,7 +165,7 @@
       },
       "email-verification": {
         "subject": "Confirmación de correo",
-        "introduction": "Confirma tu correo para seguir usando tu cuenta de Solaria.",
+        "introduction": "Confirma tu correo para seguir usando tu cuenta.",
         "button": "Confirmar correo"
       },
       "password-reset": {
@@ -175,14 +175,14 @@
       },
       "company-invitation": {
         "subject": "Invitación de empresa",
-        "introduction": "Has recibido una invitación para unirte al equipo de una empresa en Solaria.",
+        "introduction": "Has recibido una invitación para unirte al equipo de una empresa.",
         "button": "Ver invitación"
       },
       "operational-alert": {
         "subject": "Aviso operativo",
         "introduction": "Un aviso automático del monitoreo de la plataforma necesita tu atención.",
         "button": "Abrir el dashboard del servicio",
-        "footer": "Aviso automático del monitoreo de Solaria. No respondas a este correo."
+        "footer": "Aviso automático del monitoreo de la plataforma. No respondas a este correo."
       }
     }
   }

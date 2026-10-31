@@ -4,7 +4,7 @@
   "to": "david@example.com",
   "data": {
     "name": "David",
-    "companyName": "Solaria Energia",
+    "companyName": "Aurora Energia",
     "actionUrl": "http://localhost:5173/pt-BR/convite?token=preview-invitation",
     "companyLogoUrl": "https://res.cloudinary.com/solaria/image/upload/mocks/enterprises-logos-54b4ae9664e9.webp"
   }

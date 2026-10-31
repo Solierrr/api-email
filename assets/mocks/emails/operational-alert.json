@@ -5,7 +5,7 @@
   "data": {
     "alertPriority": "P2",
     "alertStatus": "firing",
-    "serviceName": "core",
+    "serviceName": "api-core",
     "environment": "prod",
     "summary": "7,1 % das respostas com erro 5xx há 10 min",
     "impact": "Pelo menos 1 em cada 20 requisições falha há 10 minutos.",

@@ -19,6 +19,14 @@ export interface EmailTransport {
   close(): void;
 }
 
+// A versão em texto não pode pôr os títulos em caixa alta (o padrão do conversor)
+const plainTextOptions = {
+  selectors: ["h1", "h2", "h3", "h4", "h5", "h6"].map((selector) => ({
+    selector,
+    options: { uppercase: false },
+  })),
+};
+
 export async function renderEmail(request: EmailRequest) {
   const alert = request.template === "operational-alert";
   const html = await render(
@@ -33,7 +41,7 @@ export async function renderEmail(request: EmailRequest) {
       ? alertSubject(request)
       : getEmailContent(request.locale, request.template).subject,
     html,
-    text: toPlainText(html),
+    text: toPlainText(html, plainTextOptions),
   };
 }
 
