@@ -63,6 +63,12 @@
         "subject": "Convite de empresa",
         "introduction": "Você recebeu um convite para integrar a equipe de uma empresa na Solaria.",
         "button": "Ver convite"
+      },
+      "operational-alert": {
+        "subject": "Aviso operacional",
+        "introduction": "Um aviso automático do monitoramento da plataforma precisa da sua atenção.",
+        "button": "Abrir o dashboard do serviço",
+        "footer": "Aviso automático do monitoramento do Solaria. Não responda a este e-mail."
       }
     },
     "en-US": {
@@ -114,6 +120,12 @@
         "subject": "Company invitation",
         "introduction": "You have been invited to join a company team on Solaria.",
         "button": "View invitation"
+      },
+      "operational-alert": {
+        "subject": "Operational alert",
+        "introduction": "An automatic notice from the platform monitoring needs your attention.",
+        "button": "Open the service dashboard",
+        "footer": "Automatic notice from Solaria monitoring. Do not reply to this email."
       }
     },
     "es-ES": {
@@ -165,6 +177,12 @@
         "subject": "Invitación de empresa",
         "introduction": "Has recibido una invitación para unirte al equipo de una empresa en Solaria.",
         "button": "Ver invitación"
+      },
+      "operational-alert": {
+        "subject": "Aviso operativo",
+        "introduction": "Un aviso automático del monitoreo de la plataforma necesita tu atención.",
+        "button": "Abrir el dashboard del servicio",
+        "footer": "Aviso automático del monitoreo de Solaria. No respondas a este correo."
       }
     }
   }

@@ -1,5 +1,8 @@
 import { render, toPlainText } from "react-email";
 import ActionEmail from "./templates/ActionEmail.js";
+import OperationalAlertEmail, {
+  alertSubject,
+} from "./templates/OperationalAlertEmail.js";
 import { getEmailContent } from "./templates/email.content.js";
 import type { EmailRequest } from "./email.schema.js";
 
@@ -17,9 +20,18 @@ export interface EmailTransport {
 }
 
 export async function renderEmail(request: EmailRequest) {
-  const html = await render(<ActionEmail request={request} />);
+  const alert = request.template === "operational-alert";
+  const html = await render(
+    alert ? (
+      <OperationalAlertEmail request={request} />
+    ) : (
+      <ActionEmail request={request} />
+    ),
+  );
   return {
-    subject: getEmailContent(request.locale, request.template).subject,
+    subject: alert
+      ? alertSubject(request)
+      : getEmailContent(request.locale, request.template).subject,
     html,
     text: toPlainText(html),
   };

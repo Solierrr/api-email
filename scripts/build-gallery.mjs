@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emailSchema, emailTemplates } from "../dist/email/email.schema.js";
 import { renderEmail } from "../dist/email/email.service.js";
+import { getEmailContent } from "../dist/email/templates/email.content.js";
 
 const root = new URL("../", import.meta.url);
 const output = new URL("gallery-dist/", root);
@@ -84,7 +85,12 @@ const manifest = await Promise.all(
             throw new Error(`Active link in ${template}/${locale}`);
           const path = `emails/${template}.${locale}.html`;
           await writeFile(new URL(path, output), html);
-          return [locale, { subject: rendered.subject, path }];
+          // O menu e o título usam o nome fixo do modelo; o assunto de um aviso operacional muda a cada
+          // alerta e é visto dentro do próprio e-mail.
+          return [
+            locale,
+            { subject: getEmailContent(locale, template).subject, path },
+          ];
         }),
       ),
     );
