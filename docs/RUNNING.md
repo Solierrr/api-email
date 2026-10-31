@@ -7,7 +7,7 @@ npm ci
 cp .env.example .env
 ```
 
-No PowerShell: `Copy-Item .env.example .env`. Gere uma chave aleatória de pelo menos 32 caracteres e coloque em EMAIL_API_KEY; .env é ignorado pelo Git.
+No PowerShell: `Copy-Item .env.example .env`. Gere uma chave aleatória de pelo menos 32 caracteres e coloque em SERVICE_KEY_API_CORE (a chave que o api-core envia em X-Service-Key); SERVICE_KEY_API_AUTH é opcional. O .env é ignorado pelo Git.
 
 ## Reload local
 
@@ -16,13 +16,17 @@ docker compose up -d mailpit
 npm run dev
 ```
 
-API localhost:8083, caixa Mailpit http://localhost:8025, SMTP localhost:1025. Compose não configura relay externo. GET /ready verifica SMTP. No Bruno preencha apiKey apenas localmente; use preview antes de enviar.
+API localhost:8083, caixa Mailpit http://localhost:8025, SMTP localhost:1025. Compose não configura relay externo. GET /ready verifica SMTP. Swagger em http://localhost:8083/docs e contrato em http://localhost:8083/openapi.json; no Authorize, informe a chave de SERVICE_KEY_API_CORE. No Bruno preencha serviceKey apenas localmente; use preview antes de enviar.
 
 ## Exemplos na caixa local
 
-Com a API e o Mailpit rodando, execute `npm run preview:seed`. Cada JSON diretamente em `preview/` representa uma chamada de envio e aparece como um e-mail em http://localhost:8025. Os oito exemplos usam nomes descritivos: exclusão de usuário, verificação de e-mail, convite empresarial, redefinição de senha, cadastro aprovado, cadastro reprovado, modelo de placa solar aprovado e verificação de novo e-mail corporativo. Edite ou adicione arquivos e execute novamente; cada execução cria novas mensagens e preserva as anteriores.
+Com a API e o Mailpit rodando, execute `npm run preview:seed`. Cada JSON em `assets/mocks/emails/` representa uma chamada de envio e aparece como um e-mail em http://localhost:8025. Há um exemplo por modelo, com nome descritivo; o de modelo de placa solar aprovado mostra uma imagem do `mocks-warehouse` (origem em `assets/mocks/README.md`). Edite ou adicione arquivos e execute novamente; cada execução cria novas mensagens e preserva as anteriores.
 
-O comando valida todos os exemplos pelo endpoint de preview antes de iniciar os envios. Usa a chave do .env, chama apenas a API em loopback e exige APP_ENV=dev com SMTP local na porta 1025. Links devem corresponder a EMAIL_ALLOWED_ORIGINS. Os tokens dos exemplos são fictícios.
+O comando valida todos os exemplos pelo endpoint de preview antes de iniciar os envios. Usa SERVICE_KEY_API_CORE do .env, chama apenas a API em loopback e exige APP_ENV=dev com SMTP local na porta 1025. Links devem corresponder a EMAIL_ALLOWED_ORIGINS. Os tokens dos exemplos são fictícios.
+
+## Alertas do Grafana localmente
+
+Defina SERVICE_KEY_GRAFANA no .env (>=32 caracteres) e, para ver os e-mails no Mailpit, ALERT_EMAIL_TO com endereços de teste e ALERT_GRAFANA_URL=http://localhost:3000. As rotas `/alerts/*/preview` funcionam sem as chaves do Jira e do WhatsApp; use as chamadas da pasta `http/alerts/` no Bruno. Para exercitar o Jira ou o WhatsApp sem as contas reais, aponte JIRA_BASE_URL para um receptor local de teste (HTTP só é aceito com APP_ENV=dev). Rotas sem as variáveis do canal respondem 503 CHANNEL_NOT_CONFIGURED.
 
 ## Tudo em Docker
 

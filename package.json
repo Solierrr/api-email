@@ -1,6 +1,6 @@
 {
   "name": "@solierrr/api-email",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -16,9 +16,11 @@
     "typecheck": "tsc --noEmit && tsc --project gallery/tsconfig.json",
     "test": "vitest run",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "openapi": "tsx scripts/export-openapi.ts"
   },
   "dependencies": {
+    "@fastify/cors": "11.3.1",
     "@fastify/swagger": "9.9.2",
     "@fastify/swagger-ui": "6.1.2",
     "@solaria.network/web-lib": "file:vendor/solaria.network-web-lib-0.3.1-email-tabler-footer-v6.tgz",

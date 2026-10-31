@@ -1,0 +1,1226 @@
+openapi: 3.1.0
+info:
+  title: Solaria — api-email
+  description: "Renderiza e envia e-mails transacionais a partir de modelos fixos,
+    em pt-BR, en-US e es-ES, e recebe os alertas do Grafana para abrir tickets
+    no Jira, avisar a equipe por e-mail e por WhatsApp. É chamado só por outros
+    serviços (api-core e api-auth nos e-mails; o Grafana nos alertas):
+    autentique com a chave de serviço no cabeçalho X-Service-Key."
+  version: 0.3.0 # x-release-please-version
+  contact:
+    name: Solaria
+    url: https://github.com/Solierrr
+  license:
+    name: CC0-1.0
+    url: https://creativecommons.org/publicdomain/zero/1.0/
+components:
+  securitySchemes:
+    serviceKey:
+      type: apiKey
+      in: header
+      name: X-Service-Key
+  schemas:
+    ProblemFieldError:
+      type: object
+      properties:
+        field:
+          type: string
+          example: data.actionUrl
+        errorCode:
+          type: string
+          example: VALIDATION_FAILED
+        detail:
+          type: string
+          example: Campo obrigatório
+      required:
+        - field
+        - errorCode
+        - detail
+      additionalProperties: false
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+          example: about:blank
+        title:
+          type: string
+          example: EMAIL_SEND_FAILED
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+          example: 503
+        errorCode:
+          type: string
+          example: EMAIL_SEND_FAILED
+        detail:
+          type: string
+          example: O servidor SMTP não aceitou a mensagem.
+        instance:
+          type: string
+          example: /emails
+        timestamp:
+          type: string
+          format: date-time
+          example: 2026-10-25T13:45:00.000Z
+        requestId:
+          description: Id da requisição nos logs do serviço.
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProblemFieldError"
+      required:
+        - type
+        - title
+        - status
+        - errorCode
+        - detail
+        - instance
+        - timestamp
+      additionalProperties: false
+    GrafanaWebhook:
+      type: object
+      properties:
+        alerts:
+          minItems: 1
+          maxItems: 50
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+                enum:
+                  - firing
+                  - resolved
+              labels:
+                type: object
+                properties:
+                  alert_id:
+                    type: string
+                    pattern: ^[A-Za-z0-9_-]{1,20}$
+                  priority:
+                    type: string
+                    enum:
+                      - P1
+                      - P2
+                      - P3
+                      - P4
+                      - P5
+                  service_name:
+                    type: string
+                    pattern: ^[A-Za-z0-9_.-]{1,80}$
+                  deployment_environment:
+                    type: string
+                    pattern: ^[A-Za-z0-9_.-]{1,80}$
+                  category:
+                    type: string
+                    pattern: ^[a-z0-9-]{1,40}$
+                  escalation_group:
+                    type: string
+                    pattern: ^[a-z0-9-]{1,40}$
+                  alertname:
+                    type: string
+                    maxLength: 200
+                required:
+                  - alert_id
+                  - priority
+                  - service_name
+                  - deployment_environment
+                additionalProperties: {}
+              annotations:
+                type: object
+                propertyNames:
+                  type: string
+                additionalProperties:
+                  type: string
+                  maxLength: 4000
+              startsAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+              endsAt:
+                type: string
+                format: date-time
+                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+              fingerprint:
+                type: string
+                maxLength: 100
+            required:
+              - status
+              - labels
+              - startsAt
+            additionalProperties: {}
+      required:
+        - alerts
+      additionalProperties: {}
+      description: Payload padrão do webhook do Grafana. Campos desconhecidos são
+        ignorados; cada alerta precisa dos rótulos alert_id, priority,
+        service_name e deployment_environment.
+      examples:
+        - alerts:
+            - status: firing
+              labels:
+                alert_id: A03
+                alertname: A03 Erros 5xx sustentados
+                category: erros
+                deployment_environment: prod
+                escalation_group: erro-5xx
+                priority: P1
+                service_name: core
+              annotations:
+                summary: "core (prod): 7.1 % de respostas 5xx há 10 min"
+                impact: Pelo menos 1 em cada 20 requisições falha há 10 minutos.
+                first_steps: 1. Abrir o dashboard. 2. Ver os logs de erro.
+                dashboard: /d/solier-servico-java?var-service=core&var-environment=prod
+              startsAt: 2026-10-30T16:06:30Z
+              endsAt: 0001-01-01T00:00:00Z
+    AlertsAccepted:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - accepted
+        sent:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+          example: 2
+        failed:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+          example: 0
+      required:
+        - status
+        - sent
+        - failed
+      additionalProperties: false
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Indica se o processo está vivo
+      tags:
+        - Saúde
+      description: Não consulta dependências; traz a versão do serviço (a do package.json).
+      security: []
+      responses:
+        "200":
+          description: Processo no ar
+          content:
+            application/json:
+              schema:
+                description: Processo no ar
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - UP
+                  version:
+                    type: string
+                    example: 0.2.0
+                required:
+                  - status
+                  - version
+                additionalProperties: false
+        "500":
+          description: Erro interno inesperado
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /ready:
+    get:
+      operationId: getReady
+      summary: Indica se o serviço está pronto para atender
+      tags:
+        - Saúde
+      description: Pronto quando o servidor SMTP aceita conexão e autenticação em até
+        2 segundos.
+      security: []
+      responses:
+        "200":
+          description: SMTP acessível
+          content:
+            application/json:
+              schema:
+                description: SMTP acessível
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - UP
+                      - DOWN
+                required:
+                  - status
+                additionalProperties: false
+        "500":
+          description: Erro interno inesperado
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "503":
+          description: SMTP inacessível
+          content:
+            application/json:
+              schema:
+                description: SMTP inacessível
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - UP
+                      - DOWN
+                required:
+                  - status
+                additionalProperties: false
+  /emails:
+    post:
+      operationId: sendEmail
+      summary: Renderiza e envia um e-mail
+      tags:
+        - E-mails
+      description: "Responde depois do aceite do servidor SMTP, que não é confirmação
+        de entrega. Sem fila, retry nem idempotência: repetir após timeout pode
+        duplicar o e-mail. Um destinatário por chamada. Campos desconhecidos são
+        recusados. Regras por modelo: company-invitation e
+        company-email-verification exigem data.companyName; project-invitation
+        exige data.projectName, data.projectRole e data.invitationExpiresAt;
+        solar-model-approved exige data.modelName; registration-rejected exige
+        data.reason; todos, menos user-deletion, exigem data.actionUrl, cuja
+        origem precisa estar em EMAIL_ALLOWED_ORIGINS."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                template:
+                  type: string
+                  enum:
+                    - email-verification
+                    - password-reset
+                    - company-invitation
+                    - project-invitation
+                    - user-deletion
+                    - registration-approved
+                    - registration-rejected
+                    - solar-model-approved
+                    - company-email-verification
+                locale:
+                  default: pt-BR
+                  type: string
+                  enum:
+                    - pt-BR
+                    - en-US
+                    - es-ES
+                to:
+                  type: string
+                  maxLength: 320
+                  format: email
+                  pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    companyName:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    projectName:
+                      type: string
+                      minLength: 1
+                      maxLength: 160
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    projectRole:
+                      type: string
+                      enum:
+                        - MANAGER
+                        - MEMBER
+                        - VIEWER
+                    invitationExpiresAt:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                    modelName:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    modelManufacturer:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    modelPowerWatts:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 10000
+                    modelImageUrl:
+                      type: string
+                      maxLength: 2048
+                      format: uri
+                    reason:
+                      type: string
+                      minLength: 1
+                      maxLength: 1000
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    actionUrl:
+                      type: string
+                      maxLength: 2048
+                      format: uri
+                  additionalProperties: false
+              required:
+                - template
+                - to
+                - data
+              additionalProperties: false
+            example:
+              template: email-verification
+              locale: pt-BR
+              to: usuario@example.com
+              data:
+                name: Ana
+                actionUrl: https://web-app.example.com/pt-BR/verificar-email?token=exemplo
+      x-error-codes:
+        - UNAUTHENTICATED
+        - FORBIDDEN
+        - VALIDATION_FAILED
+        - MALFORMED_REQUEST
+        - INVALID_ACTION_URL
+        - PAYLOAD_TOO_LARGE
+        - UNSUPPORTED_MEDIA_TYPE
+        - EMAIL_SEND_FAILED
+        - INTERNAL_ERROR
+      responses:
+        "200":
+          description: E-mail aceito pelo servidor SMTP
+          content:
+            application/json:
+              schema:
+                description: E-mail aceito pelo servidor SMTP
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - accepted
+                  messageId:
+                    type: string
+                    example: <a1b2c3@solaria.local>
+                required:
+                  - status
+                  - messageId
+                additionalProperties: false
+        "400":
+          description: "INVALID_ACTION_URL: link fora das origens permitidas"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "401":
+          description: "UNAUTHENTICATED: chave de serviço ausente ou inválida"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: "FORBIDDEN: serviço chamador não aceito nesta rota"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "413":
+          description: "PAYLOAD_TOO_LARGE: corpo maior que 16 KiB"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "415":
+          description: "UNSUPPORTED_MEDIA_TYPE: corpo que não é JSON"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "422":
+          description: "VALIDATION_FAILED: corpo inválido (detalhes em errors);
+            MALFORMED_REQUEST: JSON ilegível"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: "INTERNAL_ERROR: erro interno inesperado"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "503":
+          description: "EMAIL_SEND_FAILED: o servidor SMTP não aceitou a mensagem"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /emails/preview:
+    post:
+      operationId: previewEmail
+      summary: Renderiza um e-mail sem enviar
+      tags:
+        - E-mails
+      description: "Devolve assunto, HTML e texto do modelo, sem contato com o SMTP.
+        Um destinatário por chamada. Campos desconhecidos são recusados. Regras
+        por modelo: company-invitation e company-email-verification exigem
+        data.companyName; project-invitation exige data.projectName,
+        data.projectRole e data.invitationExpiresAt; solar-model-approved exige
+        data.modelName; registration-rejected exige data.reason; todos, menos
+        user-deletion, exigem data.actionUrl, cuja origem precisa estar em
+        EMAIL_ALLOWED_ORIGINS."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                template:
+                  type: string
+                  enum:
+                    - email-verification
+                    - password-reset
+                    - company-invitation
+                    - project-invitation
+                    - user-deletion
+                    - registration-approved
+                    - registration-rejected
+                    - solar-model-approved
+                    - company-email-verification
+                locale:
+                  default: pt-BR
+                  type: string
+                  enum:
+                    - pt-BR
+                    - en-US
+                    - es-ES
+                to:
+                  type: string
+                  maxLength: 320
+                  format: email
+                  pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+                data:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    companyName:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    projectName:
+                      type: string
+                      minLength: 1
+                      maxLength: 160
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    projectRole:
+                      type: string
+                      enum:
+                        - MANAGER
+                        - MEMBER
+                        - VIEWER
+                    invitationExpiresAt:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                    modelName:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    modelManufacturer:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    modelPowerWatts:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 10000
+                    modelImageUrl:
+                      type: string
+                      maxLength: 2048
+                      format: uri
+                    reason:
+                      type: string
+                      minLength: 1
+                      maxLength: 1000
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    actionUrl:
+                      type: string
+                      maxLength: 2048
+                      format: uri
+                  additionalProperties: false
+              required:
+                - template
+                - to
+                - data
+              additionalProperties: false
+            example:
+              template: email-verification
+              locale: pt-BR
+              to: usuario@example.com
+              data:
+                name: Ana
+                actionUrl: https://web-app.example.com/pt-BR/verificar-email?token=exemplo
+      x-error-codes:
+        - UNAUTHENTICATED
+        - FORBIDDEN
+        - VALIDATION_FAILED
+        - MALFORMED_REQUEST
+        - INVALID_ACTION_URL
+        - PAYLOAD_TOO_LARGE
+        - UNSUPPORTED_MEDIA_TYPE
+        - INTERNAL_ERROR
+      responses:
+        "200":
+          description: E-mail renderizado
+          content:
+            application/json:
+              schema:
+                description: E-mail renderizado
+                type: object
+                properties:
+                  subject:
+                    type: string
+                    example: Confirme seu e-mail
+                  html:
+                    type: string
+                  text:
+                    type: string
+                required:
+                  - subject
+                  - html
+                  - text
+                additionalProperties: false
+        "400":
+          description: "INVALID_ACTION_URL: link fora das origens permitidas"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "401":
+          description: "UNAUTHENTICATED: chave de serviço ausente ou inválida"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: "FORBIDDEN: serviço chamador não aceito nesta rota"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "413":
+          description: "PAYLOAD_TOO_LARGE: corpo maior que 16 KiB"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "415":
+          description: "UNSUPPORTED_MEDIA_TYPE: corpo que não é JSON"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "422":
+          description: "VALIDATION_FAILED: corpo inválido (detalhes em errors);
+            MALFORMED_REQUEST: JSON ilegível"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: "INTERNAL_ERROR: erro interno inesperado"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /alerts/jira:
+    post:
+      operationId: sendAlertJira
+      summary: Cria e liga os tickets do Jira
+      tags:
+        - Alertas
+      description: "Para cada alerta do ambiente configurado: `firing` cria um ticket
+        novo (no mínimo 30 minutos depois do anterior do mesmo alerta, serviço e
+        ambiente, e no máximo 8 em 24 horas), liga ao anterior e à escalada;
+        `resolved` só grava o fim do incidente, sem mudar o status. Responde 503
+        JIRA_REQUEST_FAILED para o Grafana tentar de novo."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrafanaWebhook"
+      x-error-codes:
+        - UNAUTHENTICATED
+        - FORBIDDEN
+        - VALIDATION_FAILED
+        - MALFORMED_REQUEST
+        - PAYLOAD_TOO_LARGE
+        - UNSUPPORTED_MEDIA_TYPE
+        - CHANNEL_NOT_CONFIGURED
+        - JIRA_REQUEST_FAILED
+        - INTERNAL_ERROR
+      responses:
+        "200":
+          description: Alertas processados
+          content:
+            application/json:
+              schema:
+                description: Alertas processados
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        alertId:
+                          type: string
+                          example: A03
+                        service:
+                          type: string
+                          example: core
+                        action:
+                          type: string
+                          enum:
+                            - created
+                            - skipped_interval
+                            - ceiling_comment
+                            - ignored_env
+                            - end_recorded
+                            - no_open_ticket
+                        issueKey:
+                          example: INC-12
+                          type: string
+                        issueKeys:
+                          type: array
+                          items:
+                            type: string
+                        warnings:
+                          type: array
+                          items:
+                            type: string
+                      required:
+                        - alertId
+                        - service
+                        - action
+                      additionalProperties: false
+                required:
+                  - results
+                additionalProperties: false
+        "401":
+          description: "UNAUTHENTICATED: chave de serviço ausente ou inválida"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: "FORBIDDEN: só o Grafana acessa estas rotas"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "413":
+          description: "PAYLOAD_TOO_LARGE: corpo maior que 256 KiB"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "415":
+          description: "UNSUPPORTED_MEDIA_TYPE: corpo que não é JSON"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "422":
+          description: "VALIDATION_FAILED: payload inválido (detalhes em errors);
+            MALFORMED_REQUEST: JSON ilegível"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: "INTERNAL_ERROR: erro interno inesperado"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "503":
+          description: "CHANNEL_NOT_CONFIGURED: canal sem chaves; JIRA_REQUEST_FAILED: o
+            Jira recusou ou não respondeu"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /alerts/jira/preview:
+    post:
+      operationId: previewAlertJira
+      summary: "Prévia: cria e liga os tickets do jira"
+      tags:
+        - Alertas
+      description: Mostra o que seria enviado, sem contato com o Jira, o SMTP nem o
+        WhatsApp. Funciona mesmo sem as chaves do canal.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrafanaWebhook"
+      x-error-codes:
+        - UNAUTHENTICATED
+        - FORBIDDEN
+        - VALIDATION_FAILED
+        - MALFORMED_REQUEST
+        - PAYLOAD_TOO_LARGE
+        - UNSUPPORTED_MEDIA_TYPE
+        - INTERNAL_ERROR
+      responses:
+        "200":
+          description: Prévia gerada
+          content:
+            application/json:
+              schema:
+                description: Prévia gerada
+                type: object
+                properties:
+                  tickets:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        alertId:
+                          type: string
+                        service:
+                          type: string
+                        action:
+                          type: string
+                          enum:
+                            - would_create
+                            - would_record_end
+                            - ignored_env
+                        summary:
+                          type: string
+                        priority:
+                          type: string
+                        labels:
+                          type: array
+                          items:
+                            type: string
+                        description: {}
+                      required:
+                        - alertId
+                        - service
+                        - action
+                      additionalProperties: false
+                required:
+                  - tickets
+                additionalProperties: false
+        "401":
+          description: "UNAUTHENTICATED: chave de serviço ausente ou inválida"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: "FORBIDDEN: só o Grafana acessa estas rotas"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "413":
+          description: "PAYLOAD_TOO_LARGE: corpo maior que 256 KiB"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "415":
+          description: "UNSUPPORTED_MEDIA_TYPE: corpo que não é JSON"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "422":
+          description: "VALIDATION_FAILED: payload inválido (detalhes em errors);
+            MALFORMED_REQUEST: JSON ilegível"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: "INTERNAL_ERROR: erro interno inesperado"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /alerts/email:
+    post:
+      operationId: sendAlertEmail
+      summary: Envia o e-mail do alerta à equipe
+      tags:
+        - Alertas
+      description: "Renderiza um e-mail com o layout da Solaria por alerta e envia a
+        cada endereço de ALERT_EMAIL_TO. Alertas `resolved` também são enviados,
+        marcados no assunto. Sem fila nem idempotência: repetir pode duplicar o
+        e-mail."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrafanaWebhook"
+      x-error-codes:
+        - UNAUTHENTICATED
+        - FORBIDDEN
+        - VALIDATION_FAILED
+        - MALFORMED_REQUEST
+        - PAYLOAD_TOO_LARGE
+        - UNSUPPORTED_MEDIA_TYPE
+        - CHANNEL_NOT_CONFIGURED
+        - EMAIL_SEND_FAILED
+        - INTERNAL_ERROR
+      responses:
+        "200":
+          description: Alertas processados
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertsAccepted"
+        "401":
+          description: "UNAUTHENTICATED: chave de serviço ausente ou inválida"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: "FORBIDDEN: só o Grafana acessa estas rotas"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "413":
+          description: "PAYLOAD_TOO_LARGE: corpo maior que 256 KiB"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "415":
+          description: "UNSUPPORTED_MEDIA_TYPE: corpo que não é JSON"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "422":
+          description: "VALIDATION_FAILED: payload inválido (detalhes em errors);
+            MALFORMED_REQUEST: JSON ilegível"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: "INTERNAL_ERROR: erro interno inesperado"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "503":
+          description: "CHANNEL_NOT_CONFIGURED: canal sem chaves; EMAIL_SEND_FAILED:
+            nenhum endereço aceitou a mensagem"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /alerts/email/preview:
+    post:
+      operationId: previewAlertEmail
+      summary: "Prévia: envia o e-mail do alerta à equipe"
+      tags:
+        - Alertas
+      description: Mostra o que seria enviado, sem contato com o Jira, o SMTP nem o
+        WhatsApp. Funciona mesmo sem as chaves do canal.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrafanaWebhook"
+      x-error-codes:
+        - UNAUTHENTICATED
+        - FORBIDDEN
+        - VALIDATION_FAILED
+        - MALFORMED_REQUEST
+        - PAYLOAD_TOO_LARGE
+        - UNSUPPORTED_MEDIA_TYPE
+        - INTERNAL_ERROR
+      responses:
+        "200":
+          description: Prévia gerada
+          content:
+            application/json:
+              schema:
+                description: Prévia gerada
+                type: object
+                properties:
+                  emails:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        subject:
+                          type: string
+                        html:
+                          type: string
+                        text:
+                          type: string
+                      required:
+                        - subject
+                        - html
+                        - text
+                      additionalProperties: false
+                required:
+                  - emails
+                additionalProperties: false
+        "401":
+          description: "UNAUTHENTICATED: chave de serviço ausente ou inválida"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: "FORBIDDEN: só o Grafana acessa estas rotas"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "413":
+          description: "PAYLOAD_TOO_LARGE: corpo maior que 256 KiB"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "415":
+          description: "UNSUPPORTED_MEDIA_TYPE: corpo que não é JSON"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "422":
+          description: "VALIDATION_FAILED: payload inválido (detalhes em errors);
+            MALFORMED_REQUEST: JSON ilegível"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: "INTERNAL_ERROR: erro interno inesperado"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /alerts/whatsapp:
+    post:
+      operationId: sendAlertWhatsapp
+      summary: Envia a mensagem de WhatsApp do alerta
+      tags:
+        - Alertas
+      description: Envia o template aprovado na Meta a cada número de
+        WHATSAPP_ALERT_TO. Só alertas `firing` do ambiente configurado;
+        `resolved` é ignorado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrafanaWebhook"
+      x-error-codes:
+        - UNAUTHENTICATED
+        - FORBIDDEN
+        - VALIDATION_FAILED
+        - MALFORMED_REQUEST
+        - PAYLOAD_TOO_LARGE
+        - UNSUPPORTED_MEDIA_TYPE
+        - CHANNEL_NOT_CONFIGURED
+        - WHATSAPP_SEND_FAILED
+        - INTERNAL_ERROR
+      responses:
+        "200":
+          description: Alertas processados
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertsAccepted"
+        "401":
+          description: "UNAUTHENTICATED: chave de serviço ausente ou inválida"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: "FORBIDDEN: só o Grafana acessa estas rotas"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "413":
+          description: "PAYLOAD_TOO_LARGE: corpo maior que 256 KiB"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "415":
+          description: "UNSUPPORTED_MEDIA_TYPE: corpo que não é JSON"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "422":
+          description: "VALIDATION_FAILED: payload inválido (detalhes em errors);
+            MALFORMED_REQUEST: JSON ilegível"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: "INTERNAL_ERROR: erro interno inesperado"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "503":
+          description: "CHANNEL_NOT_CONFIGURED: canal sem chaves; WHATSAPP_SEND_FAILED:
+            nenhum número aceitou a mensagem"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /alerts/whatsapp/preview:
+    post:
+      operationId: previewAlertWhatsapp
+      summary: "Prévia: envia a mensagem de whatsapp do alerta"
+      tags:
+        - Alertas
+      description: Mostra o que seria enviado, sem contato com o Jira, o SMTP nem o
+        WhatsApp. Funciona mesmo sem as chaves do canal.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrafanaWebhook"
+      x-error-codes:
+        - UNAUTHENTICATED
+        - FORBIDDEN
+        - VALIDATION_FAILED
+        - MALFORMED_REQUEST
+        - PAYLOAD_TOO_LARGE
+        - UNSUPPORTED_MEDIA_TYPE
+        - INTERNAL_ERROR
+      responses:
+        "200":
+          description: Prévia gerada
+          content:
+            application/json:
+              schema:
+                description: Prévia gerada
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        template:
+                          type: string
+                        language:
+                          type: string
+                        parameters:
+                          type: array
+                          items:
+                            type: string
+                      required:
+                        - template
+                        - language
+                        - parameters
+                      additionalProperties: false
+                required:
+                  - messages
+                additionalProperties: false
+        "401":
+          description: "UNAUTHENTICATED: chave de serviço ausente ou inválida"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: "FORBIDDEN: só o Grafana acessa estas rotas"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "413":
+          description: "PAYLOAD_TOO_LARGE: corpo maior que 256 KiB"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "415":
+          description: "UNSUPPORTED_MEDIA_TYPE: corpo que não é JSON"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "422":
+          description: "VALIDATION_FAILED: payload inválido (detalhes em errors);
+            MALFORMED_REQUEST: JSON ilegível"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: "INTERNAL_ERROR: erro interno inesperado"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+servers:
+  - url: https://api-email-6swz.onrender.com
+    description: QA
+  - url: http://localhost:8083
+    description: Local
+security:
+  - serviceKey: []
+tags:
+  - name: E-mails
+    description: Prévia e envio de e-mails transacionais.
+  - name: Alertas
+    description: "Destino dos webhooks do Grafana: ticket no Jira, e-mail e
+      WhatsApp, uma rota por canal, cada uma com prévia."
+  - name: Saúde
+    description: Verificações de vivo e pronto usadas pela plataforma.
