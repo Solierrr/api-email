@@ -27,7 +27,7 @@ export function DetailCard({
           className="mx-auto mb-5 block max-w-full rounded-medium object-contain"
         />
       )}
-      <Text className="m-0 mb-2.5 text-[11px] font-semi-bold tracking-[1px] text-gray uppercase">
+      <Text className="m-0 mb-2.5 text-xs font-semi-bold text-gray">
         {label}
       </Text>
       {title && (

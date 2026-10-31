@@ -57,7 +57,8 @@ Os componentes usam classes Tailwind dentro do EmailLayout. O wrapper Tailwind d
 2. Adicionar textos nos três idiomas em templates/email.content.ts.
 3. Reutilizar EmailLayout/EmailText/EmailAction de @solaria.network/web-lib/email e compor o corpo.
 4. Cobrir contrato, escaping e renderização; incluir exemplo Bruno.
-5. Todo template novo entra na galeria: criar o exemplo em `assets/mocks/emails/<template>.json` (o gerador lê um por template) e o ícone em `gallery/Gallery.tsx`. Imagens de exemplo vêm do `mocks-warehouse` e ficam em `assets/mocks/images/`; a galeria as publica em `/images/`.
+
+Padrão visual dos modelos: o corpo é só texto. Nada de bullets feitos com `div`, espaçamento entre palavras ou blocos para montar listas; cada informação é um parágrafo (`EmailText`), como em `Projeto: X` ou `1. Abrir o dashboard.`. As exceções autorizadas são o cartão que contém uma imagem (o modelo solar e a logo da empresa, via `DetailCard`) e o botão centralizado. Rótulos nunca em caixa alta nem com letras espaçadas. Um teste (`plain-text.test.ts`) renderiza todos os exemplos nos três idiomas e falha se aparecer `text-transform: uppercase` ou `letter-spacing`. 5. Todo template novo entra na galeria: criar o exemplo em `assets/mocks/emails/<template>.json` (o gerador lê um por template) e o ícone em `gallery/Gallery.tsx`. Imagens de exemplo vêm do `mocks-warehouse` e ficam em `assets/mocks/images/`; a galeria as publica em `/images/`.
 
 O template `operational-alert` é o aviso operacional da plataforma: quem manda (o `worker-alerts`) envia o resumo, o impacto e os primeiros passos já prontos, e o template só aplica o layout e traduz os rótulos. O assunto é montado dos dados (`[P2] core (prod): resumo`, com `[RESOLVIDO]` quando o alerta volta). A origem do `actionUrl` (o dashboard do Grafana) precisa estar em `EMAIL_ALLOWED_ORIGINS`.
 

@@ -87,10 +87,9 @@ export default function ActionEmail({ request }: { request: EmailRequest }) {
       <EmailText>{content.introduction}</EmailText>
       {request.template === "project-invitation" && (
         <>
-          <DetailCard
-            label={labels.project}
-            title={request.data.projectName!}
-          />
+          <EmailText>
+            {labels.project}: {request.data.projectName}
+          </EmailText>
           <EmailText>
             {labels.role}:{" "}
             {
@@ -127,9 +126,18 @@ export default function ActionEmail({ request }: { request: EmailRequest }) {
       {["company-invitation", "company-email-verification"].includes(
         request.template,
       ) &&
-        request.data.companyName && (
-          <DetailCard label={labels.company} title={request.data.companyName} />
-        )}
+        request.data.companyName &&
+        (request.data.companyLogoUrl ? (
+          <DetailCard
+            label={labels.company}
+            title={request.data.companyName}
+            image={request.data.companyLogoUrl}
+          />
+        ) : (
+          <EmailText>
+            {labels.company}: {request.data.companyName}
+          </EmailText>
+        ))}
       {request.template === "solar-model-approved" &&
         request.data.modelName && (
           <DetailCard
@@ -156,9 +164,9 @@ export default function ActionEmail({ request }: { request: EmailRequest }) {
           </DetailCard>
         )}
       {request.data.reason && (
-        <DetailCard label={labels.reason}>
-          <EmailText>{request.data.reason}</EmailText>
-        </DetailCard>
+        <EmailText>
+          {labels.reason}: {request.data.reason}
+        </EmailText>
       )}
       {request.data.actionUrl && request.template !== "user-deletion" && (
         <EmailAction href={request.data.actionUrl} label={content.button} />

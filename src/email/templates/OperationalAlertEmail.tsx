@@ -3,12 +3,11 @@ import {
   EmailLayout,
   EmailText,
 } from "@solaria.network/web-lib/email";
-import { Text } from "react-email";
-import { DetailCard } from "../components/DetailCard.js";
 import type { EmailLocale, EmailRequest } from "../email.schema.js";
 import { getEmailContent } from "./email.content.js";
 
-// A fonte do layout desenha o "x" entre dígitos como "×", e "5xx" viraria "5×x"
+// A fonte do layout desenha o "x" entre dígitos como "×", e "5xx" viraria "5×x". O div só desliga
+// essa ligadura; não faz layout.
 const plainDigits = { fontFeatureSettings: '"calt" 0, "liga" 0' };
 
 const labels: Record<
@@ -52,8 +51,8 @@ const labels: Record<
   },
 };
 
-// Aviso interno da plataforma: quem manda (o worker-alerts) escreve o resumo, o impacto e os passos
-// já prontos; o template só traduz os rótulos e aplica o layout.
+// Aviso interno da plataforma, só em texto: quem manda (o worker-alerts) escreve o resumo, o impacto e
+// os passos já prontos; o template traduz os rótulos e aplica o layout. A única exceção visual é o botão.
 export default function OperationalAlertEmail({
   request,
 }: {
@@ -79,28 +78,28 @@ export default function OperationalAlertEmail({
     >
       <div style={plainDigits}>
         <EmailText>{content.introduction}</EmailText>
-        <DetailCard
-          label={`${firing ? text.firing : text.resolved} ${data.alertPriority} · ${data.serviceName} (${data.environment})`}
-          title={data.summary}
-        >
-          {data.impact && (
-            <Text className="m-0 mb-4 text-[13px] text-gray">
-              {text.impact}: {data.impact}
-            </Text>
-          )}
-          {data.startedAt && (
-            <Text className="m-0 mb-1 text-[13px] text-gray">
-              {text.started}: {when.format(new Date(data.startedAt))} (
-              {text.timezone})
-            </Text>
-          )}
-          {data.endedAt && (
-            <Text className="m-0 mb-1 text-[13px] text-gray">
-              {text.ended}: {when.format(new Date(data.endedAt))} (
-              {text.timezone})
-            </Text>
-          )}
-        </DetailCard>
+        <EmailText>
+          {firing ? text.firing : text.resolved} {data.alertPriority} ·{" "}
+          {data.serviceName} ({data.environment})
+        </EmailText>
+        <EmailText>{data.summary}</EmailText>
+        {data.impact && (
+          <EmailText>
+            {text.impact}: {data.impact}
+          </EmailText>
+        )}
+        {data.startedAt && (
+          <EmailText>
+            {text.started}: {when.format(new Date(data.startedAt))} (
+            {text.timezone})
+          </EmailText>
+        )}
+        {data.endedAt && (
+          <EmailText>
+            {text.ended}: {when.format(new Date(data.endedAt))} ({text.timezone}
+            )
+          </EmailText>
+        )}
         {firing && data.firstSteps && data.firstSteps.length > 0 && (
           <>
             <EmailText>{text.steps}:</EmailText>

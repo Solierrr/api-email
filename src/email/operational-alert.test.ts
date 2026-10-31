@@ -67,8 +67,7 @@ describe("operational-alert rendering", () => {
     expect(email.subject).toBe(
       "[P2] core (prod): 7,1 % das respostas com erro 5xx há 10 min",
     );
-    expect(email.html).toContain("Alerta P2");
-    expect(email.html).toContain("core (prod)");
+    expect(email.text).toContain("Alerta P2 · core (prod)");
     expect(email.html).toContain("Abrir o dashboard do serviço");
     expect(email.html).toContain("grafana.example.test");
     expect(email.text).toContain("1. Abrir o dashboard do serviço.");
@@ -84,8 +83,8 @@ describe("operational-alert rendering", () => {
       ),
     );
     expect(email.subject).toMatch(/^\[RESOLVIDO\] \[P2\] core/);
-    expect(email.html).toContain("Alerta resolvido");
-    expect(email.html).toContain("Fim");
+    expect(email.text).toContain("Alerta resolvido P2");
+    expect(email.text).toContain("Fim:");
     expect(email.text).not.toContain("Primeiros passos");
   });
   it("translates the labels and the subject prefix", async () => {
@@ -93,9 +92,9 @@ describe("operational-alert rendering", () => {
       emailSchema.parse(request({ alertStatus: "resolved" }, "en-US")),
     );
     expect(en.subject).toMatch(/^\[RESOLVED\] /);
-    expect(en.html).toContain("Alert resolved");
+    expect(en.text).toContain("Alert resolved P2");
     const es = await renderEmail(emailSchema.parse(request({}, "es-ES")));
-    expect(es.html).toContain("Primeros pasos");
+    expect(es.text).toContain("Primeros pasos");
   });
   it("shows the time in Brasília time and escapes the content", async () => {
     const email = await renderEmail(
