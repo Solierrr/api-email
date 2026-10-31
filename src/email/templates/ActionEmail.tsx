@@ -155,11 +155,11 @@ export default function ActionEmail({ request }: { request: EmailRequest }) {
                     : undefined,
                 ]
                   .filter(Boolean)
-                  .join(" · ")}
+                  .join(", ")}
               </Text>
             )}
             <Text className="m-0 text-xs font-semi-bold text-black">
-              ✓ {labels.status}
+              {labels.status}
             </Text>
           </DetailCard>
         )}

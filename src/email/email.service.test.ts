@@ -23,7 +23,7 @@ it("renders the solar model card with image and technical context", async () => 
   });
   expect(result.html).toContain('src="https://example.com/panel.png"');
   expect(result.html).toContain('alt="Mono 550 W"');
-  expect(result.text).toContain("Solaria · 550 W");
+  expect(result.text).toContain("Solaria, 550 W");
   expect(result.text).toContain("Aprovado");
   expect(result.html).toContain("Plus Jakarta Sans");
   const body = result.html.match(/<body\b[^>]*>/i)?.[0];

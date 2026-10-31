@@ -13,7 +13,7 @@ const request = (data: Record<string, unknown> = {}, locale = "pt-BR") => ({
     environment: "prod",
     summary: "7,1 % das respostas com erro 5xx há 10 min",
     impact: "Pelo menos 1 em cada 20 requisições falha há 10 minutos.",
-    firstSteps: ["Abrir o dashboard do serviço.", "Ver os logs de erro."],
+    serviceUrl: "https://core.example.test",
     startedAt: "2026-10-31T18:00:00Z",
     actionUrl: "https://grafana.example.test/d/service-detail?var-service=core",
     ...data,
@@ -39,7 +39,7 @@ describe("operational-alert contract", () => {
     expect(result.success).toBe(false);
     expect(JSON.stringify(result.error?.issues)).toContain(field);
   });
-  it("rejects an unknown priority, status and too many steps", () => {
+  it("rejects an unknown priority, status and an insecure service link", () => {
     expect(
       emailSchema.safeParse(request({ alertPriority: "P9" })).success,
     ).toBe(false);
@@ -47,11 +47,8 @@ describe("operational-alert contract", () => {
       emailSchema.safeParse(request({ alertStatus: "unknown" })).success,
     ).toBe(false);
     expect(
-      emailSchema.safeParse(
-        request({
-          firstSteps: Array.from({ length: 7 }, (_, i) => `passo ${i}`),
-        }),
-      ).success,
+      emailSchema.safeParse(request({ serviceUrl: "http://core.example.test" }))
+        .success,
     ).toBe(false);
   });
   it("rejects control characters in the free text fields", () => {
@@ -62,18 +59,18 @@ describe("operational-alert contract", () => {
 });
 
 describe("operational-alert rendering", () => {
-  it("renders the priority, service, summary, steps and the dashboard button", async () => {
+  it("renders the priority, the linked service, the summary and the dashboard button", async () => {
     const email = await renderEmail(emailSchema.parse(request()));
     expect(email.subject).toBe(
       "[P2] core (prod): 7,1 % das respostas com erro 5xx há 10 min",
     );
-    expect(email.text).toContain("Alerta P2 · core (prod)");
+    expect(email.text).toContain("Alerta P2 no serviço");
+    expect(email.text).toContain("(prod)");
     expect(email.html).toContain("Abrir o dashboard do serviço");
     expect(email.html).toContain("grafana.example.test");
-    expect(email.text).toContain("1. Abrir o dashboard do serviço.");
-    expect(email.text).toContain("2. Ver os logs de erro.");
+    expect(email.text).not.toContain("Primeiros passos");
   });
-  it("marks a resolved alert in the subject and leaves the steps out", async () => {
+  it("marks a resolved alert in the subject and shows the end", async () => {
     const email = await renderEmail(
       emailSchema.parse(
         request({
@@ -83,7 +80,7 @@ describe("operational-alert rendering", () => {
       ),
     );
     expect(email.subject).toMatch(/^\[RESOLVIDO\] \[P2\] core/);
-    expect(email.text).toContain("Alerta resolvido P2");
+    expect(email.text).toContain("Alerta resolvido P2 no serviço");
     expect(email.text).toContain("Fim:");
     expect(email.text).not.toContain("Primeiros passos");
   });
@@ -92,9 +89,9 @@ describe("operational-alert rendering", () => {
       emailSchema.parse(request({ alertStatus: "resolved" }, "en-US")),
     );
     expect(en.subject).toMatch(/^\[RESOLVED\] /);
-    expect(en.text).toContain("Alert resolved P2");
+    expect(en.text).toContain("Alert resolved P2 on service");
     const es = await renderEmail(emailSchema.parse(request({}, "es-ES")));
-    expect(es.text).toContain("Primeros pasos");
+    expect(es.text).toContain("Alerta P2 en el servicio");
   });
   it("shows the time in Brasília time and escapes the content", async () => {
     const email = await renderEmail(
@@ -115,5 +112,28 @@ describe("operational-alert rendering", () => {
       emailSchema.parse(request({ summary: "x".repeat(300) })),
     );
     expect(email.subject.length).toBeLessThanOrEqual(200);
+  });
+});
+
+describe("operational-alert service link", () => {
+  it("links the service name to its address", async () => {
+    const email = await renderEmail(emailSchema.parse(request()));
+    expect(email.html).toMatch(
+      /<a[^>]*href="https:\/\/core\.example\.test"[^>]*>core<\/a>/,
+    );
+  });
+  it("shows the name as text when there is no address", async () => {
+    const body = request();
+    delete (body.data as Record<string, unknown>).serviceUrl;
+    const email = await renderEmail(emailSchema.parse(body));
+    expect(email.html).not.toContain("core.example.test");
+    expect(email.text).toContain("Alerta P2 no serviço core");
+  });
+  it("cuts a long subject with three plain dots", async () => {
+    const email = await renderEmail(
+      emailSchema.parse(request({ summary: "x".repeat(300) })),
+    );
+    expect(email.subject.endsWith("...")).toBe(true);
+    expect(email.subject.length).toBe(200);
   });
 });

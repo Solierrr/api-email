@@ -297,7 +297,8 @@ paths:
         solar-model-approved exige data.modelName; registration-rejected exige
         data.reason; operational-alert exige data.alertPriority,
         data.alertStatus, data.serviceName, data.environment, data.summary e
-        data.startedAt; todos, menos user-deletion, exigem data.actionUrl, cuja
+        data.startedAt (data.serviceUrl, data.impact e data.endedAt são
+        opcionais); todos, menos user-deletion, exigem data.actionUrl, cuja
         origem precisa estar em EMAIL_ALLOWED_ORIGINS."
       requestBody:
         required: true
@@ -423,14 +424,10 @@ paths:
                       minLength: 1
                       maxLength: 400
                       pattern: ^[^\u0000-\u001f\u007f]+$
-                    firstSteps:
-                      maxItems: 6
-                      type: array
-                      items:
-                        type: string
-                        minLength: 1
-                        maxLength: 240
-                        pattern: ^[^\u0000-\u001f\u007f]+$
+                    serviceUrl:
+                      type: string
+                      maxLength: 2048
+                      format: uri
                     startedAt:
                       type: string
                       format: date-time
@@ -544,9 +541,10 @@ paths:
         data.projectRole e data.invitationExpiresAt; solar-model-approved exige
         data.modelName; registration-rejected exige data.reason;
         operational-alert exige data.alertPriority, data.alertStatus,
-        data.serviceName, data.environment, data.summary e data.startedAt;
-        todos, menos user-deletion, exigem data.actionUrl, cuja origem precisa
-        estar em EMAIL_ALLOWED_ORIGINS."
+        data.serviceName, data.environment, data.summary e data.startedAt
+        (data.serviceUrl, data.impact e data.endedAt são opcionais); todos,
+        menos user-deletion, exigem data.actionUrl, cuja origem precisa estar em
+        EMAIL_ALLOWED_ORIGINS."
       requestBody:
         required: true
         content:
@@ -671,14 +669,10 @@ paths:
                       minLength: 1
                       maxLength: 400
                       pattern: ^[^\u0000-\u001f\u007f]+$
-                    firstSteps:
-                      maxItems: 6
-                      type: array
-                      items:
-                        type: string
-                        minLength: 1
-                        maxLength: 240
-                        pattern: ^[^\u0000-\u001f\u007f]+$
+                    serviceUrl:
+                      type: string
+                      maxLength: 2048
+                      format: uri
                     startedAt:
                       type: string
                       format: date-time
