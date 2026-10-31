@@ -9,6 +9,16 @@ const label = z
   .min(1)
   .max(120)
   .regex(/^[^\u0000-\u001f\u007f]+$/);
+// Só https e sem usuário nem senha na URL: vale para as imagens (o cliente de e-mail as baixa) e
+// para o link do serviço do aviso operacional
+const httpsImage = z
+  .url()
+  .max(2048)
+  .refine((value) => {
+    if (!URL.canParse(value)) return false;
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password;
+  });
 export const emailTemplates = [
   "email-verification",
   "password-reset",
@@ -19,7 +29,16 @@ export const emailTemplates = [
   "registration-rejected",
   "solar-model-approved",
   "company-email-verification",
+  "operational-alert",
 ] as const;
+
+export const alertPriorities = ["P1", "P2", "P3", "P4", "P5"] as const;
+
+const singleLine = z
+  .string()
+  .trim()
+  .min(1)
+  .regex(/^[^\u0000-\u001f\u007f]+$/);
 
 export const emailSchema = z
   .strictObject({
@@ -41,15 +60,8 @@ export const emailSchema = z
       modelName: label.optional(),
       modelManufacturer: label.optional(),
       modelPowerWatts: z.number().int().positive().max(10000).optional(),
-      modelImageUrl: z
-        .url()
-        .max(2048)
-        .refine((value) => {
-          if (!URL.canParse(value)) return false;
-          const url = new URL(value);
-          return url.protocol === "https:" && !url.username && !url.password;
-        })
-        .optional(),
+      modelImageUrl: httpsImage.optional(),
+      companyLogoUrl: httpsImage.optional(),
       reason: z
         .string()
         .trim()
@@ -58,6 +70,16 @@ export const emailSchema = z
         .regex(/^[^\u0000-\u001f\u007f]+$/)
         .optional(),
       actionUrl: z.url().max(2048).optional(),
+      // Aviso operacional (template operational-alert): o texto já vem pronto de quem manda
+      alertPriority: z.enum(alertPriorities).optional(),
+      alertStatus: z.enum(["firing", "resolved"]).optional(),
+      serviceName: label.optional(),
+      environment: label.optional(),
+      summary: singleLine.max(300).optional(),
+      impact: singleLine.max(400).optional(),
+      serviceUrl: httpsImage.optional(),
+      startedAt: z.iso.datetime({ offset: true }).optional(),
+      endedAt: z.iso.datetime({ offset: true }).optional(),
     }),
   })
   .superRefine((value, context) => {
@@ -95,6 +117,22 @@ export const emailSchema = z
         path: ["data", "modelName"],
         message: "O nome do modelo é obrigatório.",
       });
+    if (value.template === "operational-alert") {
+      for (const field of [
+        "alertPriority",
+        "alertStatus",
+        "serviceName",
+        "environment",
+        "summary",
+        "startedAt",
+      ] as const)
+        if (!value.data[field])
+          context.addIssue({
+            code: "custom",
+            path: ["data", field],
+            message: "Campo obrigatório no aviso operacional.",
+          });
+    }
     if (value.template === "registration-rejected" && !value.data.reason)
       context.addIssue({
         code: "custom",

@@ -1,4 +1,8 @@
-import { EmailAction, EmailLayout, EmailText } from "@solierrr/web-lib/email";
+import {
+  EmailAction,
+  EmailLayout,
+  EmailText,
+} from "@solaria.network/web-lib/email";
 import { Link, Text } from "react-email";
 import { DetailCard } from "../email/components/DetailCard.js";
 import { logsWarning, splitSteps, whenLines } from "./alerts.content.js";
@@ -16,6 +20,9 @@ export default function AlertEmail({ incident }: { incident: Incident }) {
       locale="pt-BR"
       title={`Alerta ${incident.priority}${incident.firing ? "" : " resolvido"}: ${incident.service}`}
       footer="Aviso automático do Grafana do SOLIER. Não responda a este e-mail."
+      siteUrl="https://solarianetwork.site"
+      privacyUrl="https://solarianetwork.site/pt-BR/politicas/privacidade"
+      githubUrl="https://github.com/Solierrr/web-app"
     >
       <div style={plainDigits}>
         <EmailText>
@@ -66,7 +73,6 @@ export default function AlertEmail({ incident }: { incident: Incident }) {
           <EmailAction
             href={links.dashboard}
             label="Abrir o dashboard do serviço"
-            fallback="Se o botão não abrir, copie o endereço abaixo:"
           />
         )}
       </div>

@@ -1,0 +1,58 @@
+name: Email gallery
+
+on:
+  push:
+    branches: [qa]
+  pull_request:
+    paths:
+      - "gallery/**"
+      - "preview/**"
+      - "src/email/**"
+      - "scripts/build-gallery.mjs"
+      - "package*.json"
+      - "vendor/**"
+      - ".github/workflows/gallery.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: email-gallery-${{ github.event_name == 'pull_request' && github.ref || 'pages' }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - uses: actions/configure-pages@v5
+        id: pages
+        if: github.event_name != 'pull_request'
+      - run: npm run gallery:build
+        env:
+          GALLERY_BASE_URL: ${{ steps.pages.outputs.base_url }}
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/qa'
+        with:
+          path: gallery-dist
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/qa'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: PREVIEW
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - id: deployment
+        uses: actions/deploy-pages@v4

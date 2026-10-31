@@ -4,8 +4,8 @@
   "to": "fornecedor@example.com",
   "data": {
     "name": "Mariana",
-    "modelName": "Solaria Mono 550 W",
-    "modelManufacturer": "Solaria",
+    "modelName": "Aurora Mono 550 W",
+    "modelManufacturer": "Aurora Solar",
     "modelPowerWatts": 550,
     "modelImageUrl": "https://res.cloudinary.com/solaria/image/upload/mocks/solar-panels-f2b8091a5514.webp",
     "actionUrl": "http://localhost:5173/pt-BR"
