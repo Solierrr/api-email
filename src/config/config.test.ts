@@ -175,6 +175,17 @@ it("validates the alert recipients, Grafana URL and Grafana key", () => {
     readConfig({ ...env, SERVICE_KEY_GRAFANA: "short-sensitive-key" }),
   ).toThrow("SERVICE_KEY_GRAFANA");
 });
+it("accepts a service key for the worker-alerts and rejects a short one", () => {
+  const config = readConfig({
+    ...env,
+    SERVICE_KEY_WORKER_ALERTS: "worker-test-key-only-not-a-secret-1234567",
+  });
+  expect(config.serviceKeys["worker-alerts"]).toBeDefined();
+  expect(readConfig(env).serviceKeys["worker-alerts"]).toBeUndefined();
+  expect(() =>
+    readConfig({ ...env, SERVICE_KEY_WORKER_ALERTS: "short-sensitive-key" }),
+  ).toThrow("SERVICE_KEY_WORKER_ALERTS");
+});
 it("lets the WhatsApp API base URL be overridden, over HTTPS outside dev", () => {
   expect(
     readConfig({ ...env, ...whatsappEnv }).alerts.whatsapp?.apiBaseUrl,

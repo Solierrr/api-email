@@ -6,11 +6,13 @@ import type { EmailTransport } from "./email/email.service.js";
 const key = "test-key-only-not-a-secret-1234567890";
 const authKey = "auth-test-key-only-not-a-secret-123456";
 const legacyKey = "legacy-test-key-only-not-a-secret-1234";
+const workerKey = "worker-test-key-only-not-a-secret-12345";
 const config = readConfig({
   NODE_ENV: "test",
   APP_ENV: "dev",
   SERVICE_KEY_API_CORE: key,
   SERVICE_KEY_API_AUTH: authKey,
+  SERVICE_KEY_WORKER_ALERTS: workerKey,
   EMAIL_API_KEY: legacyKey,
   EMAIL_FROM: "noreply@example.com",
   EMAIL_ALLOWED_ORIGINS: "http://localhost:5173",
@@ -46,6 +48,31 @@ const send = (body: unknown = payload, apiKey = key, url = "/emails") =>
   });
 
 describe("Email HTTP contract", () => {
+  it("lets the worker-alerts send an operational alert with its own key", async () => {
+    const alert = {
+      template: "operational-alert",
+      to: "dev@example.com",
+      data: {
+        alertPriority: "P1",
+        alertStatus: "firing",
+        serviceName: "api-core",
+        environment: "prod",
+        summary: "sem resposta",
+        startedAt: "2026-10-31T18:00:00Z",
+        actionUrl: "http://localhost:5173/dashboard",
+      },
+    };
+    const response = await send(alert, workerKey);
+    expect(response.statusCode).toBe(200);
+    expect(transport.send).toHaveBeenCalledTimes(1);
+    expect(
+      (vi.mocked(transport.send).mock.calls[0]![0] as { subject: string })
+        .subject,
+    ).toContain("[P1] api-core em ambiente produtivo");
+  });
+  it("still refuses an unknown key on the same route", async () => {
+    expect((await send(payload, "x".repeat(40))).statusCode).toBe(401);
+  });
   it("exposes liveness without disclosing SMTP configuration", async () => {
     const response = await app.inject({ url: "/health" });
     expect(response.json()).toEqual({
