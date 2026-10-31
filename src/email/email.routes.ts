@@ -105,7 +105,7 @@ export function registerEmailRoutes(
     app.post(
       preview ? "/emails/preview" : "/emails",
       {
-        onRequest: requireCaller("api-core", "api-auth"),
+        onRequest: requireCaller("api-core", "api-auth", "worker-alerts"),
         schema: routeSchema(preview),
       },
       async (request, reply) => {
