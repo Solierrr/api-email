@@ -9,6 +9,15 @@ const label = z
   .min(1)
   .max(120)
   .regex(/^[^\u0000-\u001f\u007f]+$/);
+// O cliente de e-mail baixa a imagem, então só https, sem usuário nem senha na URL
+const httpsImage = z
+  .url()
+  .max(2048)
+  .refine((value) => {
+    if (!URL.canParse(value)) return false;
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password;
+  });
 export const emailTemplates = [
   "email-verification",
   "password-reset",
@@ -50,15 +59,8 @@ export const emailSchema = z
       modelName: label.optional(),
       modelManufacturer: label.optional(),
       modelPowerWatts: z.number().int().positive().max(10000).optional(),
-      modelImageUrl: z
-        .url()
-        .max(2048)
-        .refine((value) => {
-          if (!URL.canParse(value)) return false;
-          const url = new URL(value);
-          return url.protocol === "https:" && !url.username && !url.password;
-        })
-        .optional(),
+      modelImageUrl: httpsImage.optional(),
+      companyLogoUrl: httpsImage.optional(),
       reason: z
         .string()
         .trim()

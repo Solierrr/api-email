@@ -14,7 +14,10 @@ const locales = ["pt-BR", "en-US", "es-ES"];
 const galleryBaseUrl = (
   process.env.GALLERY_BASE_URL || "https://solierrr.github.io/api-email"
 ).replace(/\/+$/, "");
-const mockImages = { "solar-panels-f2b8091a5514": "R9XADX.webp" };
+const mockImages = {
+  "solar-panels-f2b8091a5514": "R9XADX.webp",
+  "enterprises-logos-54b4ae9664e9": "ZOBB69.webp",
+};
 const scrollbarCss = await readFile(
   new URL(import.meta.resolve("@solaria.network/gallery-ui/scrollbar.css")),
   "utf8",
@@ -45,14 +48,15 @@ const manifest = await Promise.all(
           const data = { ...fixture.data, name: "Alex" };
           if (data.actionUrl)
             data.actionUrl = "https://example.invalid/demonstracao";
-          if (data.modelImageUrl) {
-            const id = new URL(data.modelImageUrl).pathname
+          for (const field of ["modelImageUrl", "companyLogoUrl"]) {
+            if (!data[field]) continue;
+            const id = new URL(data[field]).pathname
               .split("/")
               .pop()
               ?.replace(/\.[a-z0-9]+$/i, "");
             const file = id ? mockImages[id] : undefined;
-            if (file) data.modelImageUrl = `${galleryBaseUrl}/images/${file}`;
-            else delete data.modelImageUrl;
+            if (file) data[field] = `${galleryBaseUrl}/images/${file}`;
+            else delete data[field];
           }
           const request = emailSchema.parse({
             ...fixture,
