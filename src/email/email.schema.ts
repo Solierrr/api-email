@@ -9,7 +9,8 @@ const label = z
   .min(1)
   .max(120)
   .regex(/^[^\u0000-\u001f\u007f]+$/);
-// O cliente de e-mail baixa a imagem, então só https, sem usuário nem senha na URL
+// Só https e sem usuário nem senha na URL: vale para as imagens (o cliente de e-mail as baixa) e
+// para o link do serviço do aviso operacional
 const httpsImage = z
   .url()
   .max(2048)
@@ -76,7 +77,7 @@ export const emailSchema = z
       environment: label.optional(),
       summary: singleLine.max(300).optional(),
       impact: singleLine.max(400).optional(),
-      firstSteps: z.array(singleLine.max(240)).max(6).optional(),
+      serviceUrl: httpsImage.optional(),
       startedAt: z.iso.datetime({ offset: true }).optional(),
       endedAt: z.iso.datetime({ offset: true }).optional(),
     }),

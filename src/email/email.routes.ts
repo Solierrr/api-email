@@ -22,7 +22,7 @@ const previewSchema = z.object({
 });
 
 const bodyDescription =
-  "Um destinatário por chamada. Campos desconhecidos são recusados. Regras por modelo: company-invitation e company-email-verification exigem data.companyName; project-invitation exige data.projectName, data.projectRole e data.invitationExpiresAt; solar-model-approved exige data.modelName; registration-rejected exige data.reason; operational-alert exige data.alertPriority, data.alertStatus, data.serviceName, data.environment, data.summary e data.startedAt; todos, menos user-deletion, exigem data.actionUrl, cuja origem precisa estar em EMAIL_ALLOWED_ORIGINS.";
+  "Um destinatário por chamada. Campos desconhecidos são recusados. Regras por modelo: company-invitation e company-email-verification exigem data.companyName; project-invitation exige data.projectName, data.projectRole e data.invitationExpiresAt; solar-model-approved exige data.modelName; registration-rejected exige data.reason; operational-alert exige data.alertPriority, data.alertStatus, data.serviceName, data.environment, data.summary e data.startedAt (data.serviceUrl, data.impact e data.endedAt são opcionais); todos, menos user-deletion, exigem data.actionUrl, cuja origem precisa estar em EMAIL_ALLOWED_ORIGINS.";
 
 function routeSchema(preview: boolean) {
   const errorCodes = [

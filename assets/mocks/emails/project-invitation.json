@@ -4,7 +4,7 @@
   "to": "profissional@solaria.test",
   "data": {
     "name": "Marina",
-    "projectName": "Instalação solar — Residência Aurora",
+    "projectName": "Instalação solar Residência Aurora",
     "projectRole": "MEMBER",
     "invitationExpiresAt": "2026-10-19T12:00:00Z",
     "actionUrl": "http://localhost:5173/pt-BR/projetos?invitation=00000000-0000-0000-0000-000000000001"

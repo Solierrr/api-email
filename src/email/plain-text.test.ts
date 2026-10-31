@@ -35,6 +35,19 @@ describe("plain text pattern", () => {
       }
     },
   );
+  it.each(emailTemplates)(
+    "%s has no dash, middle dot, bullet, ellipsis or check mark in any language",
+    async (template) => {
+      for (const locale of ["pt-BR", "en-US", "es-ES"] as const) {
+        const request = emailSchema.parse({ ...mock(template), locale });
+        const email = await renderEmail(request);
+        const body = `${email.subject}
+${email.text}
+${email.html}`;
+        expect(body).not.toMatch(/[—–·•…✓→]/);
+      }
+    },
+  );
   it("shows the company name as plain text when there is no logo", async () => {
     const request = mock("company-invitation");
     delete (request.data as Record<string, unknown>).companyLogoUrl;

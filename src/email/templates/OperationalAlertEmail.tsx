@@ -3,6 +3,7 @@ import {
   EmailLayout,
   EmailText,
 } from "@solaria.network/web-lib/email";
+import { Link } from "react-email";
 import type { EmailLocale, EmailRequest } from "../email.schema.js";
 import { getEmailContent } from "./email.content.js";
 
@@ -15,44 +16,45 @@ const labels: Record<
   {
     firing: string;
     resolved: string;
+    service: string;
     started: string;
     ended: string;
     impact: string;
-    steps: string;
     timezone: string;
   }
 > = {
   "pt-BR": {
     firing: "Alerta",
     resolved: "Alerta resolvido",
+    service: "no serviço",
     started: "Início",
     ended: "Fim",
     impact: "Impacto provável",
-    steps: "Primeiros passos",
     timezone: "horário de Brasília",
   },
   "en-US": {
     firing: "Alert",
     resolved: "Alert resolved",
+    service: "on service",
     started: "Started",
     ended: "Ended",
     impact: "Likely impact",
-    steps: "First steps",
     timezone: "Brasília time",
   },
   "es-ES": {
     firing: "Alerta",
     resolved: "Alerta resuelta",
+    service: "en el servicio",
     started: "Inicio",
     ended: "Fin",
     impact: "Impacto probable",
-    steps: "Primeros pasos",
     timezone: "hora de Brasilia",
   },
 };
 
-// Aviso interno da plataforma, só em texto: quem manda (o worker-alerts) escreve o resumo, o impacto e
-// os passos já prontos; o template traduz os rótulos e aplica o layout. A única exceção visual é o botão.
+// Aviso interno da plataforma, só em texto: quem manda (o worker-alerts) escreve o resumo e o impacto
+// já prontos; o template traduz os rótulos e aplica o layout. A única exceção visual é o botão. Sem
+// travessão, ponto central, reticências em um caractere nem outros símbolos de texto gerado.
 export default function OperationalAlertEmail({
   request,
 }: {
@@ -79,8 +81,14 @@ export default function OperationalAlertEmail({
       <div style={plainDigits}>
         <EmailText>{content.introduction}</EmailText>
         <EmailText>
-          {firing ? text.firing : text.resolved} {data.alertPriority} ·{" "}
-          {data.serviceName} ({data.environment})
+          {firing ? text.firing : text.resolved} {data.alertPriority}{" "}
+          {text.service}{" "}
+          {data.serviceUrl ? (
+            <Link href={data.serviceUrl}>{data.serviceName}</Link>
+          ) : (
+            data.serviceName
+          )}{" "}
+          ({data.environment})
         </EmailText>
         <EmailText>{data.summary}</EmailText>
         {data.impact && (
@@ -99,16 +107,6 @@ export default function OperationalAlertEmail({
             {text.ended}: {when.format(new Date(data.endedAt))} ({text.timezone}
             )
           </EmailText>
-        )}
-        {firing && data.firstSteps && data.firstSteps.length > 0 && (
-          <>
-            <EmailText>{text.steps}:</EmailText>
-            {data.firstSteps.map((step, index) => (
-              <EmailText key={`${index}-${step}`}>
-                {index + 1}. {step}
-              </EmailText>
-            ))}
-          </>
         )}
         {data.actionUrl && (
           <EmailAction href={data.actionUrl} label={content.button} />
@@ -130,5 +128,5 @@ export function alertSubject(request: EmailRequest): string {
         }[request.locale]
       : "";
   const subject = `${prefix}[${data.alertPriority}] ${data.serviceName} (${data.environment}): ${data.summary}`;
-  return subject.length <= 200 ? subject : `${subject.slice(0, 199)}…`;
+  return subject.length <= 200 ? subject : `${subject.slice(0, 197)}...`;
 }
