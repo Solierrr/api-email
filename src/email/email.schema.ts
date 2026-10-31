@@ -19,7 +19,16 @@ export const emailTemplates = [
   "registration-rejected",
   "solar-model-approved",
   "company-email-verification",
+  "operational-alert",
 ] as const;
+
+export const alertPriorities = ["P1", "P2", "P3", "P4", "P5"] as const;
+
+const singleLine = z
+  .string()
+  .trim()
+  .min(1)
+  .regex(/^[^\u0000-\u001f\u007f]+$/);
 
 export const emailSchema = z
   .strictObject({
@@ -58,6 +67,16 @@ export const emailSchema = z
         .regex(/^[^\u0000-\u001f\u007f]+$/)
         .optional(),
       actionUrl: z.url().max(2048).optional(),
+      // Aviso operacional (template operational-alert): o texto já vem pronto de quem manda
+      alertPriority: z.enum(alertPriorities).optional(),
+      alertStatus: z.enum(["firing", "resolved"]).optional(),
+      serviceName: label.optional(),
+      environment: label.optional(),
+      summary: singleLine.max(300).optional(),
+      impact: singleLine.max(400).optional(),
+      firstSteps: z.array(singleLine.max(240)).max(6).optional(),
+      startedAt: z.iso.datetime({ offset: true }).optional(),
+      endedAt: z.iso.datetime({ offset: true }).optional(),
     }),
   })
   .superRefine((value, context) => {
@@ -95,6 +114,22 @@ export const emailSchema = z
         path: ["data", "modelName"],
         message: "O nome do modelo é obrigatório.",
       });
+    if (value.template === "operational-alert") {
+      for (const field of [
+        "alertPriority",
+        "alertStatus",
+        "serviceName",
+        "environment",
+        "summary",
+        "startedAt",
+      ] as const)
+        if (!value.data[field])
+          context.addIssue({
+            code: "custom",
+            path: ["data", field],
+            message: "Campo obrigatório no aviso operacional.",
+          });
+    }
     if (value.template === "registration-rejected" && !value.data.reason)
       context.addIssue({
         code: "custom",

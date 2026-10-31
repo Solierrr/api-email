@@ -295,7 +295,9 @@ paths:
         company-email-verification exigem data.companyName; project-invitation
         exige data.projectName, data.projectRole e data.invitationExpiresAt;
         solar-model-approved exige data.modelName; registration-rejected exige
-        data.reason; todos, menos user-deletion, exigem data.actionUrl, cuja
+        data.reason; operational-alert exige data.alertPriority,
+        data.alertStatus, data.serviceName, data.environment, data.summary e
+        data.startedAt; todos, menos user-deletion, exigem data.actionUrl, cuja
         origem precisa estar em EMAIL_ALLOWED_ORIGINS."
       requestBody:
         required: true
@@ -316,6 +318,7 @@ paths:
                     - registration-rejected
                     - solar-model-approved
                     - company-email-verification
+                    - operational-alert
                 locale:
                   default: pt-BR
                   type: string
@@ -383,6 +386,55 @@ paths:
                       type: string
                       maxLength: 2048
                       format: uri
+                    alertPriority:
+                      type: string
+                      enum:
+                        - P1
+                        - P2
+                        - P3
+                        - P4
+                        - P5
+                    alertStatus:
+                      type: string
+                      enum:
+                        - firing
+                        - resolved
+                    serviceName:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    environment:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    summary:
+                      type: string
+                      minLength: 1
+                      maxLength: 300
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    impact:
+                      type: string
+                      minLength: 1
+                      maxLength: 400
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    firstSteps:
+                      maxItems: 6
+                      type: array
+                      items:
+                        type: string
+                        minLength: 1
+                        maxLength: 240
+                        pattern: ^[^\u0000-\u001f\u007f]+$
+                    startedAt:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                    endedAt:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
                   additionalProperties: false
               required:
                 - template
@@ -486,9 +538,11 @@ paths:
         por modelo: company-invitation e company-email-verification exigem
         data.companyName; project-invitation exige data.projectName,
         data.projectRole e data.invitationExpiresAt; solar-model-approved exige
-        data.modelName; registration-rejected exige data.reason; todos, menos
-        user-deletion, exigem data.actionUrl, cuja origem precisa estar em
-        EMAIL_ALLOWED_ORIGINS."
+        data.modelName; registration-rejected exige data.reason;
+        operational-alert exige data.alertPriority, data.alertStatus,
+        data.serviceName, data.environment, data.summary e data.startedAt;
+        todos, menos user-deletion, exigem data.actionUrl, cuja origem precisa
+        estar em EMAIL_ALLOWED_ORIGINS."
       requestBody:
         required: true
         content:
@@ -508,6 +562,7 @@ paths:
                     - registration-rejected
                     - solar-model-approved
                     - company-email-verification
+                    - operational-alert
                 locale:
                   default: pt-BR
                   type: string
@@ -575,6 +630,55 @@ paths:
                       type: string
                       maxLength: 2048
                       format: uri
+                    alertPriority:
+                      type: string
+                      enum:
+                        - P1
+                        - P2
+                        - P3
+                        - P4
+                        - P5
+                    alertStatus:
+                      type: string
+                      enum:
+                        - firing
+                        - resolved
+                    serviceName:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    environment:
+                      type: string
+                      minLength: 1
+                      maxLength: 120
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    summary:
+                      type: string
+                      minLength: 1
+                      maxLength: 300
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    impact:
+                      type: string
+                      minLength: 1
+                      maxLength: 400
+                      pattern: ^[^\u0000-\u001f\u007f]+$
+                    firstSteps:
+                      maxItems: 6
+                      type: array
+                      items:
+                        type: string
+                        minLength: 1
+                        maxLength: 240
+                        pattern: ^[^\u0000-\u001f\u007f]+$
+                    startedAt:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                    endedAt:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
                   additionalProperties: false
               required:
                 - template

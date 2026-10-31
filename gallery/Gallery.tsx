@@ -22,6 +22,7 @@ import {
   IconDeviceMobile,
   IconFolder,
   IconKey,
+  IconAlertTriangle,
   IconMail,
   IconMailCheck,
   IconSolarPanel,
@@ -52,6 +53,7 @@ const templateIcons: Record<string, TablerIcon> = {
   "registration-rejected": IconUserX,
   "solar-model-approved": IconSolarPanel,
   "company-email-verification": IconMail,
+  "operational-alert": IconAlertTriangle,
 };
 const actionClass =
   "inline-flex size-9 shrink-0 items-center justify-center rounded-small text-operational-ink transition-colors hover:bg-operational-hover focus-visible:outline-2 focus-visible:outline-operational-ink motion-reduce:transition-none";

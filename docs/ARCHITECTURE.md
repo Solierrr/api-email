@@ -57,5 +57,8 @@ Os componentes usam classes Tailwind dentro do EmailLayout. O wrapper Tailwind d
 2. Adicionar textos nos três idiomas em templates/email.content.ts.
 3. Reutilizar EmailLayout/EmailText/EmailAction de @solaria.network/web-lib/email e compor o corpo.
 4. Cobrir contrato, escaping e renderização; incluir exemplo Bruno.
+5. Todo template novo entra na galeria: criar o exemplo em `assets/mocks/emails/<template>.json` (o gerador lê um por template) e o ícone em `gallery/Gallery.tsx`. Imagens de exemplo vêm do `mocks-warehouse` e ficam em `assets/mocks/images/`; a galeria as publica em `/images/`.
+
+O template `operational-alert` é o aviso operacional da plataforma: quem manda (o `worker-alerts`) envia o resumo, o impacto e os primeiros passos já prontos, e o template só aplica o layout e traduz os rótulos. O assunto é montado dos dados (`[P2] core (prod): resumo`, com `[RESOLVIDO]` quando o alerta volta). A origem do `actionUrl` (o dashboard do Grafana) precisa estar em `EMAIL_ALLOWED_ORIGINS`.
 
 Não gera tokens, consulta usuários ou decide permissões. Usar rede interna e HTTPS para chamadas remotas; cada servidor chamador usa a própria chave. Fila durável, deduplicação, identidade por consumidor e entrega confirmada exigem evolução explícita. Não há fila em memória fingindo persistência.
