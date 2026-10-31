@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emailSchema, emailTemplates } from "../dist/email/email.schema.js";
@@ -7,6 +7,13 @@ import { renderEmail } from "../dist/email/email.service.js";
 const root = new URL("../", import.meta.url);
 const output = new URL("gallery-dist/", root);
 const locales = ["pt-BR", "en-US", "es-ES"];
+// As imagens vêm de assets/mocks/images, copiadas do mocks-warehouse. O contrato só aceita URL https
+// em modelImageUrl, então a galeria publica as cópias e aponta para elas. A chave é o ID do catálogo
+// que o mock usa na URL do Cloudinary (ver assets/mocks/README.md).
+const galleryBaseUrl = (
+  process.env.GALLERY_BASE_URL ?? "https://solierrr.github.io/api-email"
+).replace(/\/+$/, "");
+const mockImages = { "solar-panels-f2b8091a5514": "R9XADX.webp" };
 const scrollbarCss = await readFile(
   new URL(import.meta.resolve("@solaria.network/gallery-ui/scrollbar.css")),
   "utf8",
@@ -18,12 +25,18 @@ if (outputPath !== resolve(fileURLToPath(root), "gallery-dist")) {
 }
 await rm(outputPath, { recursive: true, force: true });
 await mkdir(new URL("emails/", output), { recursive: true });
+await cp(new URL("assets/mocks/images/", root), new URL("images/", output), {
+  recursive: true,
+});
 await writeFile(new URL(".nojekyll", output), "");
 
 const manifest = await Promise.all(
   emailTemplates.map(async (template) => {
     const fixture = JSON.parse(
-      await readFile(new URL(`preview/${template}.json`, root), "utf8"),
+      await readFile(
+        new URL(`assets/mocks/emails/${template}.json`, root),
+        "utf8",
+      ),
     );
     const versions = Object.fromEntries(
       await Promise.all(
@@ -31,7 +44,15 @@ const manifest = await Promise.all(
           const data = { ...fixture.data, name: "Alex" };
           if (data.actionUrl)
             data.actionUrl = "https://example.invalid/demonstracao";
-          delete data.modelImageUrl;
+          if (data.modelImageUrl) {
+            const id = new URL(data.modelImageUrl).pathname
+              .split("/")
+              .pop()
+              ?.replace(/\.[a-z0-9]+$/i, "");
+            const file = id ? mockImages[id] : undefined;
+            if (file) data.modelImageUrl = `${galleryBaseUrl}/images/${file}`;
+            else delete data.modelImageUrl;
+          }
           const request = emailSchema.parse({
             ...fixture,
             template,

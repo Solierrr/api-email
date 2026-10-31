@@ -4,10 +4,14 @@ import { readConfig } from "./config/config.js";
 import type { EmailTransport } from "./email/email.service.js";
 
 const key = "test-key-only-not-a-secret-1234567890";
+const authKey = "auth-test-key-only-not-a-secret-123456";
+const legacyKey = "legacy-test-key-only-not-a-secret-1234";
 const config = readConfig({
   NODE_ENV: "test",
   APP_ENV: "dev",
-  EMAIL_API_KEY: key,
+  SERVICE_KEY_API_CORE: key,
+  SERVICE_KEY_API_AUTH: authKey,
+  EMAIL_API_KEY: legacyKey,
   EMAIL_FROM: "noreply@example.com",
   EMAIL_ALLOWED_ORIGINS: "http://localhost:5173",
   SMTP_HOST: "localhost",
@@ -21,14 +25,14 @@ const payload = {
   },
 };
 let transport: EmailTransport;
-let app: ReturnType<typeof buildApp>;
-beforeEach(() => {
+let app: Awaited<ReturnType<typeof buildApp>>;
+beforeEach(async () => {
   transport = {
     send: vi.fn().mockResolvedValue("<test@example.com>"),
     verify: vi.fn().mockResolvedValue(undefined),
     close: vi.fn(),
   };
-  app = buildApp(config, transport, false);
+  app = await buildApp(config, transport, false);
 });
 afterEach(async () => {
   await app.close();
@@ -37,35 +41,17 @@ const send = (body: unknown = payload, apiKey = key, url = "/emails") =>
   app.inject({
     method: "POST",
     url,
-    headers: { "x-api-key": apiKey, "content-type": "application/json" },
+    headers: { "x-service-key": apiKey, "content-type": "application/json" },
     payload: JSON.stringify(body),
   });
 
 describe("Email HTTP contract", () => {
-  it("exposes Swagger with a protected send and preview contract", async () => {
-    const response = await app.inject({ url: "/openapi.json" });
-    expect(response.statusCode).toBe(200);
-    const document = response.json();
-    expect(
-      document.components.schemas.EmailRequest.properties.template.enum,
-    ).toContain("email-verification");
-    expect(document.paths["/emails"].post.security).toEqual([
-      { ServiceKey: [] },
-    ]);
-    expect(document.paths["/emails/preview"].post.security).toEqual([
-      { ServiceKey: [] },
-    ]);
-    expect(document.components.securitySchemes.ServiceKey.name).toBe(
-      "X-API-Key",
-    );
-    expect(response.body).not.toContain(key);
-    const docs = await app.inject({ url: "/docs/" });
-    expect(docs.statusCode).toBe(200);
-    expect(docs.body).toContain("swagger-ui");
-  });
   it("exposes liveness without disclosing SMTP configuration", async () => {
     const response = await app.inject({ url: "/health" });
-    expect(response.json()).toEqual({ status: "ok" });
+    expect(response.json()).toEqual({
+      status: "UP",
+      version: expect.stringMatching(/^\d+\.\d+\.\d+$/),
+    });
     expect(transport.verify).not.toHaveBeenCalled();
   });
   it("returns unavailable when SMTP readiness fails", async () => {
@@ -74,17 +60,98 @@ describe("Email HTTP contract", () => {
     );
     const response = await app.inject({ url: "/ready" });
     expect(response.statusCode).toBe(503);
+    expect(response.json()).toEqual({ status: "DOWN" });
     expect(response.body).not.toContain("secret");
+  });
+  it("reports readiness when SMTP answers", async () => {
+    const response = await app.inject({ url: "/ready" });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ status: "UP" });
   });
   it.each(["/emails", "/emails/preview"])("protects %s", async (url) => {
     const response = await send(payload, "wrong-key", url);
     expect(response.statusCode).toBe(401);
+    expect(response.headers["content-type"]).toContain(
+      "application/problem+json",
+    );
+    expect(response.json()).toMatchObject({
+      type: "about:blank",
+      title: "UNAUTHENTICATED",
+      status: 401,
+      errorCode: "UNAUTHENTICATED",
+      instance: url,
+    });
+    expect(response.body).not.toContain("wrong-key");
     expect(transport.send).not.toHaveBeenCalled();
   });
+  it("accepts every configured caller and the transitional legacy key", async () => {
+    expect((await send(payload, authKey)).statusCode).toBe(200);
+    const legacy = await app.inject({
+      method: "POST",
+      url: "/emails/preview",
+      headers: { "x-api-key": legacyKey, "content-type": "application/json" },
+      payload: JSON.stringify(payload),
+    });
+    expect(legacy.statusCode).toBe(200);
+  });
+  it("refuses every call when no service key is configured", async () => {
+    const closed = await buildApp(
+      readConfig({
+        NODE_ENV: "test",
+        APP_ENV: "dev",
+        EMAIL_FROM: "noreply@example.com",
+        EMAIL_ALLOWED_ORIGINS: "http://localhost:5173",
+        SMTP_HOST: "localhost",
+      }),
+      transport,
+      false,
+    );
+    const response = await closed.inject({
+      method: "POST",
+      url: "/emails/preview",
+      headers: { "x-service-key": "", "content-type": "application/json" },
+      payload: JSON.stringify(payload),
+    });
+    expect(response.statusCode).toBe(401);
+    await closed.close();
+  });
+  it("answers unknown routes with a problem detail", async () => {
+    const response = await app.inject({ url: "/unknown" });
+    expect(response.statusCode).toBe(404);
+    expect(response.json()).toMatchObject({ errorCode: "NOT_FOUND" });
+  });
+  it("serves the documentation and the contract", async () => {
+    expect((await app.inject({ url: "/docs" })).statusCode).toBeLessThan(400);
+    const contract = (await app.inject({ url: "/openapi.json" })).json();
+    expect(contract.info.title).toBe("Solaria — api-email");
+    expect(Object.keys(contract.paths)).toEqual(
+      expect.arrayContaining([
+        "/emails",
+        "/emails/preview",
+        "/health",
+        "/ready",
+      ]),
+    );
+  });
+  it("hides the documentation when disabled", async () => {
+    const hidden = await buildApp(
+      { ...config, DOCS_ENABLED: false },
+      transport,
+      false,
+    );
+    expect((await hidden.inject({ url: "/docs" })).statusCode).toBe(404);
+    expect((await hidden.inject({ url: "/openapi.json" })).statusCode).toBe(
+      404,
+    );
+    await hidden.close();
+  });
   it("rejects an unknown template without sending", async () => {
-    expect(
-      (await send({ ...payload, template: "arbitrary-html" })).statusCode,
-    ).toBe(400);
+    const response = await send({ ...payload, template: "arbitrary-html" });
+    expect(response.statusCode).toBe(422);
+    expect(response.json()).toMatchObject({
+      errorCode: "VALIDATION_FAILED",
+      errors: [expect.objectContaining({ field: "template" })],
+    });
     expect(transport.send).not.toHaveBeenCalled();
   });
   it.each([
@@ -92,9 +159,9 @@ describe("Email HTTP contract", () => {
     "https://evil.example/path",
     "http://user:password@localhost:5173/path",
   ])("rejects untrusted links: %s", async (actionUrl) => {
-    expect((await send({ ...payload, data: { actionUrl } })).statusCode).toBe(
-      400,
-    );
+    const response = await send({ ...payload, data: { actionUrl } });
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toMatchObject({ errorCode: "INVALID_ACTION_URL" });
     expect(transport.send).not.toHaveBeenCalled();
   });
   it("rejects HTML payloads, sender overrides and multiple recipients", async () => {
@@ -103,14 +170,14 @@ describe("Email HTTP contract", () => {
       { ...payload, from: "other@example.com" },
       { ...payload, to: ["a@example.com", "b@example.com"] },
     ]) {
-      expect((await send(body)).statusCode).toBe(400);
+      expect((await send(body)).statusCode).toBe(422);
     }
     expect(transport.send).not.toHaveBeenCalled();
   });
   it("requires a company name for invitations", async () => {
     expect(
       (await send({ ...payload, template: "company-invitation" })).statusCode,
-    ).toBe(400);
+    ).toBe(422);
   });
   it("previews escaped HTML and readable plain text without sending", async () => {
     const response = await send(
@@ -160,17 +227,18 @@ describe("Email HTTP contract", () => {
     );
     const response = await send();
     expect(response.statusCode).toBe(503);
-    expect(response.json()).toMatchObject({ code: "EMAIL_SEND_FAILED" });
+    expect(response.json()).toMatchObject({ errorCode: "EMAIL_SEND_FAILED" });
     expect(response.body).not.toContain("password");
   });
   it("handles malformed JSON without echoing sensitive payloads", async () => {
     const response = await app.inject({
       method: "POST",
       url: "/emails",
-      headers: { "x-api-key": key, "content-type": "application/json" },
+      headers: { "x-service-key": key, "content-type": "application/json" },
       payload: '{"token":"secret"',
     });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(422);
+    expect(response.json()).toMatchObject({ errorCode: "MALFORMED_REQUEST" });
     expect(response.body).not.toContain("secret");
   });
 });

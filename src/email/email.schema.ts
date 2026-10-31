@@ -1,6 +1,8 @@
 import { z } from "zod";
 import type { EmailConfig } from "../config/config.js";
 
+z.config(z.locales.pt());
+
 const label = z
   .string()
   .trim()
@@ -68,7 +70,7 @@ export const emailSchema = z
       context.addIssue({
         code: "custom",
         path: ["data", "companyName"],
-        message: "Company name is required",
+        message: "O nome da empresa é obrigatório.",
       });
     if (
       value.template === "project-invitation" &&
@@ -79,25 +81,25 @@ export const emailSchema = z
       context.addIssue({
         code: "custom",
         path: ["data", "projectName"],
-        message: "Project, role and invitation expiry are required",
+        message: "Projeto, papel e validade do convite são obrigatórios.",
       });
     if (value.template !== "user-deletion" && !value.data.actionUrl)
       context.addIssue({
         code: "custom",
         path: ["data", "actionUrl"],
-        message: "Action URL is required",
+        message: "O link de ação é obrigatório.",
       });
     if (value.template === "solar-model-approved" && !value.data.modelName)
       context.addIssue({
         code: "custom",
         path: ["data", "modelName"],
-        message: "Model name is required",
+        message: "O nome do modelo é obrigatório.",
       });
     if (value.template === "registration-rejected" && !value.data.reason)
       context.addIssue({
         code: "custom",
         path: ["data", "reason"],
-        message: "Rejection reason is required",
+        message: "O motivo da reprovação é obrigatório.",
       });
   });
 

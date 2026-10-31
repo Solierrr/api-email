@@ -7,3 +7,4 @@ CHANGELOG.md
 LICENSE
 http/**/*.bru
 entrypoint.sh
+openapi.yaml

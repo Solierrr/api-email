@@ -1,0 +1,43 @@
+meta {
+  name: POST /alerts/jira/preview
+  type: http
+  seq: 1
+}
+post {
+  url: {{baseUrl}}/alerts/jira/preview
+  body: json
+  auth: none
+}
+headers {
+  Content-Type: application/json
+  X-Service-Key: {{grafanaKey}}
+}
+body:json {
+  {
+    "alerts": [
+      {
+        "status": "firing",
+        "labels": {
+          "alert_id": "A03",
+          "alertname": "A03 Erros 5xx sustentados",
+          "category": "erros",
+          "deployment_environment": "prod",
+          "escalation_group": "erro-5xx",
+          "priority": "P1",
+          "service_name": "core"
+        },
+        "annotations": {
+          "summary": "core (prod): 7.1 % de respostas 5xx há 10 min",
+          "impact": "Pelo menos 1 em cada 20 requisições falha há 10 minutos.",
+          "first_steps": "1. Abrir o dashboard. 2. Ver os logs de erro.",
+          "dashboard": "/d/solier-servico-java?var-service=core&var-environment=prod"
+        },
+        "startsAt": "2026-10-30T16:06:30Z",
+        "endsAt": "0001-01-01T00:00:00Z"
+      }
+    ]
+  }
+}
+docs {
+  Mostra o ticket que seria criado, sem chamar o Jira. Funciona sem as chaves do Jira.
+}

@@ -8,12 +8,12 @@ if (
 ) {
   throw new Error("Use APP_ENV=dev e o Mailpit local na porta SMTP 1025.");
 }
-if (!process.env.EMAIL_API_KEY) {
-  throw new Error("Configure EMAIL_API_KEY no .env.");
+if (!process.env.SERVICE_KEY_API_CORE) {
+  throw new Error("Configure SERVICE_KEY_API_CORE no .env.");
 }
 
 const baseUrl = `http://127.0.0.1:${process.env.PORT || "8083"}`;
-const folder = new URL("../preview/", import.meta.url);
+const folder = new URL("../assets/mocks/emails/", import.meta.url);
 const files = (await readdir(folder))
   .filter((file) => file.endsWith(".json"))
   .sort();
@@ -31,7 +31,7 @@ async function request(path, body) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-API-Key": process.env.EMAIL_API_KEY,
+      "X-Service-Key": process.env.SERVICE_KEY_API_CORE,
     },
     body,
     signal: AbortSignal.timeout(20000),
