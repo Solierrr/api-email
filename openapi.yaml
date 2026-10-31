@@ -19,9 +19,6 @@ components:
       type: apiKey
       in: header
       name: X-Service-Key
-    bearerAuth:
-      type: http
-      scheme: bearer
   schemas:
     ProblemFieldError:
       type: object
@@ -1219,7 +1216,6 @@ servers:
     description: Local
 security:
   - serviceKey: []
-  - bearerAuth: []
 tags:
   - name: E-mails
     description: Prévia e envio de e-mails transacionais.

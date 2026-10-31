@@ -81,11 +81,9 @@ export async function registerOpenApi(
       components: {
         securitySchemes: {
           serviceKey: { type: "apiKey", in: "header", name: "X-Service-Key" },
-          // The same service key; Grafana stores only the Authorization credential encrypted
-          bearerAuth: { type: "http", scheme: "bearer" },
         },
       },
-      security: [{ serviceKey: [] }, { bearerAuth: [] }],
+      security: [{ serviceKey: [] }],
     },
     refResolver: {
       buildLocalReference: (json, _baseUri, _fragment, index) =>
