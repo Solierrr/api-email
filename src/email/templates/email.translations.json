@@ -16,55 +16,65 @@
   "templates": {
     "pt-BR": {
       "project-invitation": {
+        "purpose": "Convite",
         "subject": "Convite de projeto",
         "introduction": "Você foi convidado para participar do projeto abaixo. Aceite ou recuse o convite com a conta correspondente ao e-mail destinatário.",
         "button": "Ver convite"
       },
       "user-deletion": {
+        "purpose": "Conta",
         "subject": "Exclusão de conta",
         "introduction": "A exclusão da sua conta foi concluída. Este e-mail confirma o encerramento do seu acesso.",
         "button": ""
       },
       "registration-approved": {
+        "purpose": "Cadastro",
         "subject": "Cadastro aprovado",
         "introduction": "A análise do seu cadastro foi concluída e ele foi aprovado. Acesse a plataforma para consultar seu perfil.",
         "button": "Ver meu cadastro",
         "footer": "Você recebeu este aviso sobre a análise do seu cadastro."
       },
       "registration-rejected": {
+        "purpose": "Cadastro",
         "subject": "Cadastro reprovado",
         "introduction": "Seu cadastro não foi aprovado na análise. Confira o motivo abaixo e consulte os detalhes na plataforma.",
         "button": "Ver meu cadastro",
         "footer": "Este aviso se refere à análise do seu cadastro; ele não significa exclusão da sua conta."
       },
       "solar-model-approved": {
+        "purpose": "Modelo",
         "subject": "Modelo solar aprovado",
         "introduction": "O modelo de placa solar abaixo foi aprovado na análise.",
         "button": "Ver modelo",
         "footer": "Você recebeu este aviso sobre a análise do seu modelo de placa solar."
       },
       "company-email-verification": {
+        "purpose": "Empresa",
         "subject": "E-mail da empresa",
         "introduction": "Recebemos uma solicitação de alteração do e-mail corporativo da empresa abaixo. Verifique este endereço para continuar o processo; a verificação não substitui a aprovação administrativa.",
         "button": "Verificar novo e-mail",
         "footer": "Se você não solicitou esta alteração, contate o administrador da empresa."
       },
       "email-verification": {
+        "purpose": "Conta",
         "subject": "Confirmação de e-mail",
         "introduction": "Confirme seu e-mail para continuar usando sua conta.",
         "button": "Confirmar e-mail"
       },
       "password-reset": {
+        "purpose": "Conta",
         "subject": "Redefinição de senha",
         "introduction": "Recebemos uma solicitação para redefinir sua senha. Use o botão abaixo para escolher uma nova senha.",
         "button": "Redefinir senha"
       },
       "company-invitation": {
+        "purpose": "Convite",
         "subject": "Convite de empresa",
         "introduction": "Você recebeu um convite para integrar a equipe de uma empresa.",
         "button": "Ver convite"
       },
       "operational-alert": {
+        "purpose": "Alerta",
         "subject": "Aviso operacional",
         "introduction": "Um aviso automático do monitoramento da plataforma precisa da sua atenção.",
         "button": "Abrir o dashboard do serviço",
@@ -73,55 +83,65 @@
     },
     "en-US": {
       "project-invitation": {
+        "purpose": "Invitation",
         "subject": "Project invitation",
         "introduction": "You have been invited to the project below. Accept or decline using the account matching the recipient email.",
         "button": "View invitation"
       },
       "user-deletion": {
+        "purpose": "Account",
         "subject": "Account deletion",
         "introduction": "Your account deletion is complete. This email confirms the end of your access.",
         "button": ""
       },
       "registration-approved": {
+        "purpose": "Registration",
         "subject": "Registration approved",
         "introduction": "Your registration review is complete and it was approved. Open the platform to check your profile.",
         "button": "View registration",
         "footer": "You received this notice about your registration review."
       },
       "registration-rejected": {
+        "purpose": "Registration",
         "subject": "Registration rejected",
         "introduction": "Your registration was not approved during review. Check the reason below and view the details on the platform.",
         "button": "View registration",
         "footer": "This registration review notice does not mean your account was deleted."
       },
       "solar-model-approved": {
+        "purpose": "Model",
         "subject": "Solar model approved",
         "introduction": "The solar panel model below was approved during review.",
         "button": "View model",
         "footer": "You received this notice about your solar panel model review."
       },
       "company-email-verification": {
+        "purpose": "Company",
         "subject": "Company email",
         "introduction": "We received a request to change the corporate email for the company below. Verify this address to continue; verification does not replace administrative approval.",
         "button": "Verify new email",
         "footer": "If you did not request this change, contact your company administrator."
       },
       "email-verification": {
+        "purpose": "Account",
         "subject": "Email confirmation",
         "introduction": "Confirm your email to continue using your account.",
         "button": "Confirm email"
       },
       "password-reset": {
+        "purpose": "Account",
         "subject": "Password reset",
         "introduction": "We received a request to reset your password. Use the button below to choose a new password.",
         "button": "Reset password"
       },
       "company-invitation": {
+        "purpose": "Invitation",
         "subject": "Company invitation",
         "introduction": "You have been invited to join a company team.",
         "button": "View invitation"
       },
       "operational-alert": {
+        "purpose": "Alert",
         "subject": "Operational alert",
         "introduction": "An automatic notice from the platform monitoring needs your attention.",
         "button": "Open the service dashboard",
@@ -130,55 +150,65 @@
     },
     "es-ES": {
       "project-invitation": {
+        "purpose": "Invitación",
         "subject": "Invitación de proyecto",
         "introduction": "Te invitaron al proyecto indicado abajo. Acepta o rechaza con la cuenta correspondiente al correo destinatario.",
         "button": "Ver invitación"
       },
       "user-deletion": {
+        "purpose": "Cuenta",
         "subject": "Eliminación de cuenta",
         "introduction": "La eliminación de tu cuenta se ha completado. Este correo confirma el fin de tu acceso.",
         "button": ""
       },
       "registration-approved": {
+        "purpose": "Registro",
         "subject": "Registro aprobado",
         "introduction": "La revisión de tu registro ha finalizado y fue aprobado. Abre la plataforma para consultar tu perfil.",
         "button": "Ver registro",
         "footer": "Has recibido este aviso sobre la revisión de tu registro."
       },
       "registration-rejected": {
+        "purpose": "Registro",
         "subject": "Registro rechazado",
         "introduction": "Tu registro no fue aprobado durante la revisión. Consulta el motivo abajo y los detalles en la plataforma.",
         "button": "Ver registro",
         "footer": "Este aviso de revisión no significa que tu cuenta haya sido eliminada."
       },
       "solar-model-approved": {
+        "purpose": "Modelo",
         "subject": "Modelo solar aprobado",
         "introduction": "El modelo de panel solar indicado abajo fue aprobado durante la revisión.",
         "button": "Ver modelo",
         "footer": "Has recibido este aviso sobre la revisión de tu modelo de panel solar."
       },
       "company-email-verification": {
+        "purpose": "Empresa",
         "subject": "Correo de la empresa",
         "introduction": "Recibimos una solicitud de cambio del correo corporativo de la empresa indicada abajo. Verifica esta dirección para continuar; la verificación no sustituye la aprobación administrativa.",
         "button": "Verificar nuevo correo",
         "footer": "Si no solicitaste este cambio, contacta con el administrador de tu empresa."
       },
       "email-verification": {
+        "purpose": "Cuenta",
         "subject": "Confirmación de correo",
         "introduction": "Confirma tu correo para seguir usando tu cuenta.",
         "button": "Confirmar correo"
       },
       "password-reset": {
+        "purpose": "Cuenta",
         "subject": "Restablecimiento de contraseña",
         "introduction": "Recibimos una solicitud para restablecer tu contraseña. Usa el botón para elegir una nueva.",
         "button": "Restablecer contraseña"
       },
       "company-invitation": {
+        "purpose": "Invitación",
         "subject": "Invitación de empresa",
         "introduction": "Has recibido una invitación para unirte al equipo de una empresa.",
         "button": "Ver invitación"
       },
       "operational-alert": {
+        "purpose": "Alerta",
         "subject": "Aviso operativo",
         "introduction": "Un aviso automático del monitoreo de la plataforma necesita tu atención.",
         "button": "Abrir el dashboard del servicio",

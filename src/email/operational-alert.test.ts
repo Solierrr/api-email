@@ -62,7 +62,7 @@ describe("operational-alert rendering", () => {
   it("renders the priority, the linked service, the summary and the dashboard button", async () => {
     const email = await renderEmail(emailSchema.parse(request()));
     expect(email.subject).toBe(
-      "[P2] api-core em ambiente produtivo: 7,1 % das respostas com erro 5xx há 10 min",
+      "[Alerta: P2] api-core em ambiente produtivo: 7,1 % das respostas com erro 5xx há 10 min",
     );
     expect(email.text).toContain("Alerta P2 no serviço api-core");
     expect(email.text).toContain("em ambiente produtivo");
@@ -80,7 +80,7 @@ describe("operational-alert rendering", () => {
       ),
     );
     expect(email.subject).toMatch(
-      /^\[RESOLVIDO\] \[P2\] api-core em ambiente produtivo/,
+      /^\[Alerta resolvido: P2\] api-core em ambiente produtivo/,
     );
     expect(email.text).toContain("Alerta resolvido P2 no serviço api-core");
     expect(email.text).toContain("em ambiente produtivo");
@@ -91,7 +91,7 @@ describe("operational-alert rendering", () => {
     const en = await renderEmail(
       emailSchema.parse(request({ alertStatus: "resolved" }, "en-US")),
     );
-    expect(en.subject).toMatch(/^\[RESOLVED\] /);
+    expect(en.subject).toMatch(/^\[Alert resolved: P2\] /);
     expect(en.text).toContain("Alert resolved P2 on service api-core");
     expect(en.text).toContain("in production environment");
     const es = await renderEmail(emailSchema.parse(request({}, "es-ES")));
