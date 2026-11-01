@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.0](https://github.com/Solierrr/api-email/compare/v0.4.0...v0.5.0) (2026-11-01)
+
+
+### Features
+
+* format email subjects as purpose and title ([ac99e42](https://github.com/Solierrr/api-email/commit/ac99e424e72763be252f004429775beedc4e217c))
+
+## [0.4.0](https://github.com/Solierrr/api-email/compare/v0.3.0...v0.4.0) (2026-10-31)
+
+
+### Features
+
+* promote the email templates, the gallery and the worker alerts caller to main ([#26](https://github.com/Solierrr/api-email/issues/26)) ([c531c2e](https://github.com/Solierrr/api-email/commit/c531c2ec8051c351d4d60a67240d60ff79b4e6ff))
+* receive grafana alerts and deliver them to jira, email and whatsapp ([#17](https://github.com/Solierrr/api-email/issues/17)) ([d32b6a3](https://github.com/Solierrr/api-email/commit/d32b6a3488a11be33607b0395cbc3dce4284d782))
+
 ## [0.3.0](https://github.com/Solierrr/api-email/compare/v0.2.0...v0.3.0) (2026-10-30)
 
 

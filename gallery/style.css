@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
-@import "@solaria.network/gallery-ui/theme.css";
-@source "../node_modules/@solaria.network/gallery-ui/dist";
+@import "@solaria.network/web-lib/theme.css";
+@source "./node_modules/@solaria.network/web-lib/dist";
 
 html,
 body,
@@ -10,43 +10,33 @@ body,
 }
 body {
   margin: 0;
-  font-family: var(--font-ui);
-  color: var(--color-operational-ink);
-  background: var(--color-operational-shell);
   overflow: hidden;
 }
 button,
 select {
   font: inherit;
 }
-.gallery-workspace {
-  --gallery-preview-width: 57.375rem;
-  display: grid;
-  grid-template-columns: minmax(0, 17.5rem) minmax(
-      0,
-      var(--gallery-preview-width)
-    );
-  grid-template-rows: minmax(0, 1fr);
-  align-content: stretch;
-  align-items: stretch;
-  justify-content: center;
-  gap: 1rem;
-  flex: 1;
-  width: 100%;
-  min-height: 0;
-  padding: 0 2rem 2rem;
+
+/* A casca ocupa a janela; a prévia usa o resto da altura */
+.gx-shell {
+  height: 100dvh;
 }
-.gallery-templates {
+.gx-body {
+  min-height: 0;
+}
+.gx-main {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-height: 100%;
-  min-height: 0;
+  padding: 0 1rem 1rem;
+  overflow: hidden;
 }
-.gallery-template-list {
+
+.gallery-workspace {
+  display: flex;
+  flex: 1;
+  justify-content: center;
   min-height: 0;
-  max-height: 100%;
-  overflow-y: auto;
+  padding-top: 1rem;
 }
 .gallery-preview-layout {
   display: flex;
@@ -105,15 +95,8 @@ select {
   transform-origin: top left;
 }
 @media (max-width: 760px) {
-  .gallery-workspace {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
-    align-content: stretch;
-    gap: 16px;
-    padding: 0 12px 1rem;
-  }
-  .gallery-template-list {
-    max-height: 180px;
+  .gx-main {
+    padding: 0 0.75rem 1rem;
   }
 }
 .device-selector[data-compact="true"] {
