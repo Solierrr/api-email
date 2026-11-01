@@ -1,0 +1,8 @@
+{
+  "service": "api-email",
+  "aliases": [
+    "email"
+  ],
+  "project": "DEV",
+  "host": "https://email.solarianetwork.site"
+}
