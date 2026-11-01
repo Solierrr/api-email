@@ -1,12 +1,13 @@
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { emailSchema, emailTemplates } from "../dist/email/email.schema.js";
-import { renderEmail } from "../dist/email/email.service.js";
-import { getEmailContent } from "../dist/email/templates/email.content.js";
+import { emailSchema, emailTemplates } from "../../dist/email/email.schema.js";
+import { renderEmail } from "../../dist/email/email.service.js";
+import { getEmailContent } from "../../dist/email/templates/email.content.js";
 
-const root = new URL("../", import.meta.url);
-const output = new URL("gallery-dist/", root);
+// Roda depois do `vite build`, que já gravou a galeria em gallery/dist; aqui entram os e-mails e as imagens.
+const root = new URL("../../", import.meta.url);
+const output = new URL("gallery/dist/", root);
 const locales = ["pt-BR", "en-US", "es-ES"];
 // As imagens vêm de assets/mocks/images, copiadas do mocks-warehouse. O contrato só aceita URL https
 // em modelImageUrl, então a galeria publica as cópias e aponta para elas. A chave é o ID do catálogo
@@ -19,15 +20,16 @@ const mockImages = {
   "enterprises-logos-54b4ae9664e9": "ZOBB69.webp",
 };
 const scrollbarCss = await readFile(
-  new URL(import.meta.resolve("@solaria.network/gallery-ui/scrollbar.css")),
+  new URL(import.meta.resolve("@solaria.network/web-lib/scrollbar.css")),
   "utf8",
 );
 
 const outputPath = resolve(fileURLToPath(output));
-if (outputPath !== resolve(fileURLToPath(root), "gallery-dist")) {
+if (outputPath !== resolve(fileURLToPath(root), "gallery", "dist")) {
   throw new Error("Unexpected gallery output directory");
 }
-await rm(outputPath, { recursive: true, force: true });
+await rm(new URL("emails/", output), { recursive: true, force: true });
+await rm(new URL("images/", output), { recursive: true, force: true });
 await mkdir(new URL("emails/", output), { recursive: true });
 await cp(new URL("assets/mocks/images/", root), new URL("images/", output), {
   recursive: true,

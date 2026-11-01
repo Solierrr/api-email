@@ -1,0 +1,14 @@
+{
+  "name": "api-email",
+  "kind": "gallery",
+  "title": {
+    "pt-BR": "Previews de e-mail",
+    "en-US": "Email previews",
+    "es-ES": "Vistas previas de correo"
+  },
+  "description": {
+    "pt-BR": "Os templates de e-mail do serviço nos três idiomas, em tela cheia e em celular.",
+    "en-US": "The service email templates in the three languages, on desktop and mobile.",
+    "es-ES": "Las plantillas de correo del servicio en los tres idiomas, en escritorio y móvil."
+  }
+}
