@@ -1,0 +1,29 @@
+name: Preview
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "gallery/**"
+      - "assets/mocks/**"
+      - "src/email/**"
+      - ".github/workflows/preview.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: preview-${{ github.event_name == 'pull_request' && github.ref || 'pages' }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    uses: Solierrr/.github/.github/workflows/preview-gallery.yml@main
+    with:
+      root-install: true
+      root-command: npm run build
+      publish: ${{ github.event_name != 'pull_request' }}
