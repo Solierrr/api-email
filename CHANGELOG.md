@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/Solierrr/api-email/compare/v0.4.0...v0.5.0) (2026-11-01)
+
+
+### Features
+
+* format email subjects as purpose and title ([ac99e42](https://github.com/Solierrr/api-email/commit/ac99e424e72763be252f004429775beedc4e217c))
+
 ## [0.4.0](https://github.com/Solierrr/api-email/compare/v0.3.0...v0.4.0) (2026-10-31)
 
 
