@@ -13,8 +13,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: preview-${{ github.event_name == 'pull_request' && github.ref || 'pages' }}
@@ -22,6 +20,10 @@ concurrency:
 
 jobs:
   preview:
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     uses: Solierrr/.github/.github/workflows/preview-gallery.yml@main
     with:
       root-install: true
