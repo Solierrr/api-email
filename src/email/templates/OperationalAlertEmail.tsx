@@ -5,7 +5,7 @@ import {
 } from "@solaria.network/web-lib/email";
 import { Link } from "react-email";
 import type { EmailLocale, EmailRequest } from "../email.schema.js";
-import { getEmailContent } from "./email.content.js";
+import { formatSubject, getEmailContent } from "./email.content.js";
 
 // A fonte do layout desenha o "x" entre dígitos como "×", e "5xx" viraria "5×x". O div só desliga
 // essa ligadura; não faz layout.
@@ -144,17 +144,12 @@ export default function OperationalAlertEmail({
   );
 }
 
-// "[P2] core (prod): resumo", com o prefixo [RESOLVIDO] quando o alerta voltou ao normal
+// "[Alerta: P2] api-core em ambiente produtivo: resumo", ou "[Alerta resolvido: P2] ..." quando voltou
 export function alertSubject(request: EmailRequest): string {
   const { data } = request;
-  const prefix =
-    data.alertStatus === "resolved"
-      ? {
-          "pt-BR": "[RESOLVIDO] ",
-          "en-US": "[RESOLVED] ",
-          "es-ES": "[RESUELTO] ",
-        }[request.locale]
-      : "";
-  const subject = `${prefix}[${data.alertPriority}] ${data.serviceName} ${labels[request.locale].environment} ${environmentName(request.locale, data.environment!)}: ${data.summary}`;
+  const text = labels[request.locale];
+  const purpose = `${data.alertStatus === "resolved" ? text.resolved : text.firing}: ${data.alertPriority}`;
+  const title = `${data.serviceName} ${text.environment} ${environmentName(request.locale, data.environment!)}: ${data.summary}`;
+  const subject = formatSubject(purpose, title);
   return subject.length <= 200 ? subject : `${subject.slice(0, 197)}...`;
 }

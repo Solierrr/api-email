@@ -68,7 +68,7 @@ describe("Email HTTP contract", () => {
     expect(
       (vi.mocked(transport.send).mock.calls[0]![0] as { subject: string })
         .subject,
-    ).toContain("[P1] api-core em ambiente produtivo");
+    ).toContain("[Alerta: P1] api-core em ambiente produtivo");
   });
   it("still refuses an unknown key on the same route", async () => {
     expect((await send(payload, "x".repeat(40))).statusCode).toBe(401);
