@@ -1,8 +1,9 @@
 import { createRoot } from "react-dom/client";
 import { createInstance } from "i18next";
 import { I18nextProvider, initReactI18next } from "react-i18next";
-import { uiTranslations } from "@solaria.network/gallery-ui";
-import "@solaria.network/gallery-ui/style.css";
+import { uiTranslations } from "@solaria.network/web-lib";
+import "@solaria.network/web-lib/style.css";
+import "@solaria.network/web-lib/gallery.css";
 import "./style.css";
 import Gallery from "./Gallery";
 

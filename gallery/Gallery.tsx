@@ -5,17 +5,20 @@ import {
   useState,
   type CSSProperties,
 } from "react";
+import {
+  GalleryShell,
+  useGallery,
+  type GalleryLocale,
+  type GallerySection,
+  type LocalizedText,
+} from "@solaria.network/web-lib/gallery";
 import { useTranslation } from "react-i18next";
 import {
-  GitHubIcon,
   GroupAction,
-  Icon,
-  MenuItem,
-  MenuList,
   Surface,
   SurfaceGroup,
   ToolbarAction,
-} from "@solaria.network/gallery-ui";
+} from "@solaria.network/web-lib";
 import {
   IconBuilding,
   IconDeviceDesktop,
@@ -32,15 +35,9 @@ import {
   type TablerIcon,
 } from "@tabler/icons-react";
 
-const languages = [
-  { code: "pt-BR", label: "Português" },
-  { code: "en-US", label: "English" },
-  { code: "es-ES", label: "Español" },
-] as const;
-type Locale = (typeof languages)[number]["code"];
 interface Template {
   id: string;
-  versions: Record<Locale, { subject: string; path: string }>;
+  versions: Record<GalleryLocale, { subject: string; path: string }>;
 }
 
 const templateIcons: Record<string, TablerIcon> = {
@@ -55,106 +52,41 @@ const templateIcons: Record<string, TablerIcon> = {
   "company-email-verification": IconMail,
   "operational-alert": IconAlertTriangle,
 };
-const actionClass =
-  "inline-flex size-9 shrink-0 items-center justify-center rounded-small text-operational-ink transition-colors hover:bg-operational-hover focus-visible:outline-2 focus-visible:outline-operational-ink motion-reduce:transition-none";
-const repository = "https://github.com/Solierrr/api-email";
 
-function LanguageSwitcher({
-  value,
-  onChange,
-  disabled,
-}: {
-  value: Locale;
-  onChange: (locale: Locale) => void;
-  disabled: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const container = useRef<HTMLDivElement>(null);
-  const trigger = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const root = container.current;
-    root?.querySelector<HTMLElement>('[aria-selected="true"]')?.focus();
-    function outside(event: PointerEvent) {
-      if (!root?.contains(event.target as Node)) setOpen(false);
-    }
-    function escape(event: KeyboardEvent) {
-      if (event.key !== "Escape") return;
-      setOpen(false);
-      trigger.current?.focus();
-    }
-    document.addEventListener("pointerdown", outside);
-    document.addEventListener("keydown", escape);
-    return () => {
-      document.removeEventListener("pointerdown", outside);
-      document.removeEventListener("keydown", escape);
-    };
-  }, [open]);
-
-  return (
-    <div ref={container} className="relative">
-      <button
-        ref={trigger}
-        type="button"
-        aria-label="Idioma"
-        title="Idioma"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls="gallery-languages"
-        disabled={disabled}
-        className="flex h-9 cursor-pointer items-center-safe gap-1 rounded-small px-2 transition-colors hover:bg-operational-hover focus-visible:outline-2 focus-visible:outline-operational-ink disabled:opacity-40"
-        onClick={() => setOpen((current) => !current)}
-      >
-        <Icon name="globe" size={20} />
-        <Icon
-          name="chevronDown"
-          size={20}
-          className={`transition-transform motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-      {open && (
-        <MenuList
-          id="gallery-languages"
-          role="listbox"
-          aria-label="Idioma"
-          className="absolute right-0 z-50 mt-1 min-w-40"
-          onKeyDown={(event) => {
-            if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
-            event.preventDefault();
-            const options = Array.from(
-              event.currentTarget.querySelectorAll<HTMLElement>(
-                '[role="option"]',
-              ),
-            );
-            const current = options.indexOf(
-              document.activeElement as HTMLElement,
-            );
-            options[
-              (current + (event.key === "ArrowDown" ? 1 : options.length - 1)) %
-                options.length
-            ]?.focus();
-          }}
-        >
-          {languages.map((language) => (
-            <MenuItem
-              key={language.code}
-              role="option"
-              selected={value === language.code}
-              onSelect={() => {
-                onChange(language.code);
-                setOpen(false);
-                trigger.current?.focus();
-              }}
-            >
-              {language.label}
-            </MenuItem>
-          ))}
-        </MenuList>
-      )}
-    </div>
-  );
-}
+const messages = {
+  loading: {
+    "pt-BR": "Carregando…",
+    "en-US": "Loading…",
+    "es-ES": "Cargando…",
+  },
+  failed: {
+    "pt-BR":
+      "Não foi possível carregar os templates. Atualize a página para tentar novamente.",
+    "en-US": "Could not load the templates. Reload the page to try again.",
+    "es-ES":
+      "No se pudieron cargar las plantillas. Actualiza la página para intentarlo de nuevo.",
+  },
+  section: {
+    "pt-BR": "Templates de e-mail",
+    "en-US": "Email templates",
+    "es-ES": "Plantillas de correo",
+  },
+  frame: {
+    "pt-BR": "Prévia do e-mail",
+    "en-US": "Email preview",
+    "es-ES": "Vista previa del correo",
+  },
+  options: {
+    "pt-BR": "Opções da prévia",
+    "en-US": "Preview options",
+    "es-ES": "Opciones de la vista previa",
+  },
+  ratio: {
+    "pt-BR": "Proporção da prévia",
+    "en-US": "Preview ratio",
+    "es-ES": "Proporción de la vista previa",
+  },
+} satisfies Record<string, Record<GalleryLocale, string>>;
 
 function DeviceSelector({
   mobile,
@@ -163,6 +95,7 @@ function DeviceSelector({
   mobile: boolean;
   onChange: (mobile: boolean) => void;
 }) {
+  const { text } = useGallery();
   const [expanded, setExpanded] = useState(false);
   const [smallScreen, setSmallScreen] = useState(
     () => window.matchMedia("(max-width: 760px)").matches,
@@ -202,6 +135,15 @@ function DeviceSelector({
     requestAnimationFrame(() => trigger.current?.focus());
   }
 
+  function expand() {
+    setExpanded(true);
+    requestAnimationFrame(() =>
+      container.current
+        ?.querySelector<HTMLElement>('[aria-pressed="true"]')
+        ?.focus(),
+    );
+  }
+
   return (
     <div
       ref={container}
@@ -219,27 +161,15 @@ function DeviceSelector({
       <ToolbarAction
         ref={trigger}
         icon="more"
-        label="Opções da prévia"
+        label={text(messages.options)}
         aria-expanded={expanded}
         aria-controls="preview-device-options"
         className="device-trigger"
-        onClick={() => {
-          setExpanded(true);
-          requestAnimationFrame(() =>
-            container.current
-              ?.querySelector<HTMLElement>('[aria-pressed="true"]')
-              ?.focus(),
-          );
-        }}
+        onClick={expand}
         onKeyDown={(event) => {
           if (event.key !== "ArrowDown") return;
           event.preventDefault();
-          setExpanded(true);
-          requestAnimationFrame(() =>
-            container.current
-              ?.querySelector<HTMLElement>('[aria-pressed="true"]')
-              ?.focus(),
-          );
+          expand();
         }}
       />
       <div id="preview-device-options" className="device-options">
@@ -247,7 +177,7 @@ function DeviceSelector({
           direction="horizontal"
           divided={false}
           role="group"
-          aria-label="Proporção da prévia"
+          aria-label={text(messages.ratio)}
           className="shrink-0"
         >
           <GroupAction
@@ -314,17 +244,16 @@ function usePreviewWidth(mobile: boolean) {
 
 function EmailPreview({
   selected,
-  locale,
   mobile,
   width,
   onDeviceChange,
 }: {
   selected: Template | undefined;
-  locale: Locale;
   mobile: boolean;
   width: number;
   onDeviceChange: (mobile: boolean) => void;
 }) {
+  const { locale, text } = useGallery();
   const container = useRef<HTMLElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   useLayoutEffect(() => {
@@ -336,7 +265,7 @@ function EmailPreview({
     const observer = new ResizeObserver(measure);
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [selected]);
   const scale = Math.min(1, size.width / width) || 1;
   return (
     <div className="gallery-preview-layout" style={{ maxWidth: width + 18 }}>
@@ -349,7 +278,7 @@ function EmailPreview({
         </div>
         <section
           ref={container}
-          aria-label="Prévia do e-mail"
+          aria-label={text(messages.frame)}
           className="frame-area"
         >
           {selected && (
@@ -359,7 +288,7 @@ function EmailPreview({
             >
               <iframe
                 src={`./emails/${encodeURIComponent(selected.id)}.${locale}.html`}
-                title={`${selected.versions[locale].subject} — ${locale}`}
+                title={`${selected.versions[locale].subject} (${locale})`}
                 sandbox=""
                 referrerPolicy="no-referrer"
                 style={{
@@ -376,22 +305,63 @@ function EmailPreview({
   );
 }
 
-export default function Gallery() {
+function Viewer({
+  templates,
+  error,
+  selected,
+}: {
+  templates: Template[];
+  error: boolean;
+  selected: Template | undefined;
+}) {
+  const { locale, text } = useGallery();
   const { i18n } = useTranslation();
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [error, setError] = useState(false);
-  const [hash, setHash] = useState(location.hash);
+  useEffect(() => {
+    void i18n.changeLanguage(locale);
+  }, [i18n, locale]);
   const [mobile, setMobile] = useState(
     () => window.matchMedia("(max-width: 760px)").matches,
   );
   const previewWidth = usePreviewWidth(mobile);
-  const params = new URLSearchParams(hash.slice(1));
-  const locale =
-    languages.find((language) => language.code === params.get("locale"))
-      ?.code ?? "pt-BR";
+
+  if (!selected) {
+    return (
+      <p
+        role={error ? "alert" : "status"}
+        className="p-4 text-operational-muted"
+      >
+        {text(error ? messages.failed : messages.loading)}
+      </p>
+    );
+  }
+  return (
+    <div
+      className="gallery-workspace"
+      style={
+        {
+          "--gallery-preview-width": `${previewWidth + 18}px`,
+        } as CSSProperties
+      }
+    >
+      <EmailPreview
+        selected={templates.length ? selected : undefined}
+        mobile={mobile}
+        width={previewWidth}
+        onDeviceChange={setMobile}
+      />
+    </div>
+  );
+}
+
+export default function Gallery() {
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [error, setError] = useState(false);
+  const [hash, setHash] = useState(location.hash);
   const selected =
-    templates.find((template) => template.id === params.get("template")) ??
-    templates[0];
+    templates.find(
+      (template) =>
+        template.id === new URLSearchParams(hash.slice(1)).get("template"),
+    ) ?? templates[0];
 
   useEffect(() => {
     const controller = new AbortController();
@@ -418,89 +388,44 @@ export default function Gallery() {
     return () => window.removeEventListener("hashchange", changed);
   }, []);
 
-  useEffect(() => {
-    void i18n.changeLanguage(locale);
-  }, [i18n, locale]);
-
-  function navigate(template: string, language: Locale) {
-    location.hash = new URLSearchParams({
-      template,
-      locale: language,
-    }).toString();
-  }
+  const sections: GallerySection[] = [
+    {
+      id: "templates",
+      title: messages.section,
+      items: templates.map((template) => {
+        const Glyph = templateIcons[template.id] ?? IconMail;
+        const label = Object.fromEntries(
+          Object.entries(template.versions).map(([code, version]) => [
+            code,
+            version.subject,
+          ]),
+        ) as Record<GalleryLocale, string>;
+        return {
+          id: template.id,
+          label: label satisfies LocalizedText,
+          icon: <Glyph size={20} className="shrink-0" aria-hidden="true" />,
+        };
+      }),
+    },
+  ];
 
   return (
-    <div className="gallery-shell flex h-dvh min-h-0 flex-col bg-operational-shell">
-      <header className="navbar-frame z-30 w-full justify-between gap-2 bg-operational-shell!">
-        <div className="ml-auto flex items-center gap-1 sm:gap-2">
-          <a
-            href={repository}
-            aria-label="Repositório no GitHub"
-            title="GitHub"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={actionClass}
-          >
-            <GitHubIcon size={20} />
-          </a>
-          <LanguageSwitcher
-            value={locale}
-            disabled={!selected}
-            onChange={(language) => selected && navigate(selected.id, language)}
-          />
-        </div>
-      </header>
-      <main
-        className="gallery-workspace"
-        style={
-          {
-            "--gallery-preview-width": `${previewWidth + 18}px`,
-          } as CSSProperties
-        }
-      >
-        <nav
-          aria-label="Templates de e-mail"
-          className="flex min-h-0 min-w-0 items-start"
-        >
-          <SurfaceGroup
-            className="gallery-templates"
-            contentClassName="gallery-template-list scrollbar-none"
-          >
-            {templates.map((template) => {
-              const Glyph = templateIcons[template.id] ?? IconMail;
-              return (
-                <GroupAction
-                  key={template.id}
-                  label={template.versions[locale].subject}
-                  content={template.versions[locale].subject}
-                  glyph={
-                    <Glyph size={20} className="shrink-0" aria-hidden="true" />
-                  }
-                  active={selected?.id === template.id}
-                  onClick={() => navigate(template.id, locale)}
-                />
-              );
-            })}
-            {!selected && (
-              <p
-                role={error ? "alert" : "status"}
-                className="p-4 text-operational-muted"
-              >
-                {error
-                  ? "Não foi possível carregar os templates. Atualize a página para tentar novamente."
-                  : "Carregando…"}
-              </p>
-            )}
-          </SurfaceGroup>
-        </nav>
-        <EmailPreview
-          selected={selected}
-          locale={locale}
-          mobile={mobile}
-          width={previewWidth}
-          onDeviceChange={setMobile}
-        />
-      </main>
-    </div>
+    <GalleryShell
+      title={{
+        "pt-BR": "Previews de e-mail",
+        "en-US": "Email previews",
+        "es-ES": "Vistas previas de correo",
+      }}
+      repository="api-email"
+      version={import.meta.env.VITE_VERSION}
+      commit={import.meta.env.VITE_COMMIT}
+      sections={sections}
+      selectedId={selected?.id ?? ""}
+      onSelect={(id) => {
+        location.hash = new URLSearchParams({ template: id }).toString();
+      }}
+    >
+      <Viewer templates={templates} error={error} selected={selected} />
+    </GalleryShell>
   );
 }

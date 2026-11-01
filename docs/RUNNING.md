@@ -46,17 +46,17 @@ O serviço consome `@solaria.network/web-lib/email` por meio do pacote local ver
 
 ## Galeria estática
 
-Execute `npm run gallery:build` para gerar `gallery-dist/` e `npm run gallery:preview` para abrir a prévia local. O resultado pode ser servido por qualquer servidor HTTP estático. Não é necessário `.env`, API, SMTP ou Mailpit.
+A galeria (preview dos e-mails) fica em `gallery/`, com `package.json` próprio. Para gerar: `npm run build` na raiz (compila o serviço) e, em `gallery/`, `npm ci` e `npm run build`, que grava `gallery/dist/`. `npm run dev` abre a galeria em desenvolvimento e `npm run preview`, o resultado. O resultado pode ser servido por qualquer servidor HTTP estático. Não é necessário `.env`, API, SMTP ou Mailpit.
 
-O gerador reutiliza `renderEmail`, os componentes de `@solaria.network/web-lib/email` e os exemplos de `assets/mocks/emails/`. Gera os três idiomas para cada template registrado, substitui destinatário e URL de ação por dados de demonstração e desativa os links dentro dos e-mails. A prévia fica em um iframe com sandbox.
+O gerador (`gallery/scripts/build-emails.mjs`) reutiliza `renderEmail`, os componentes de `@solaria.network/web-lib/email` e os exemplos de `assets/mocks/emails/`. Gera os três idiomas para cada template registrado, substitui destinatário e URL de ação por dados de demonstração e desativa os links dentro dos e-mails. A prévia fica em um iframe com sandbox.
 
-A interface em `gallery/` utiliza os componentes de browser da web-lib por meio do alias de desenvolvimento `@solaria.network/gallery-ui`. Esse snapshot separado preserva o pacote de e-mail e seu branding atual. Navbar, menus e seleção de proporção reutilizam `OrganicLogo`, `MenuList`, `MenuItem`, `SurfaceGroup` e `GroupAction`, com CSS compilado pelo Vite/Tailwind. Os assuntos dos templates são curtos e não repetem o nome do projeto.
+A interface usa a casca padrão dos previews (`@solaria.network/web-lib/gallery`): cabeçalho com o link para o portal de previews, menu lateral com busca, rodapé com repositório, versão e commit, tema claro e escuro e idioma pt-BR, en-US e es-ES. A galeria só entrega o conteúdo: a lista de templates, a moldura de dispositivo (desktop e mobile, que continua aqui) e o iframe. Os assuntos dos templates são curtos e não repetem o nome do projeto. O build usa caminhos relativos, então serve em `solierrr.github.io/api-email/` e no portal de documentação. O `gallery.json` da raiz descreve o preview para o portal.
 
-A navbar mantém a logo no tamanho do sandbox e os acessos GitHub/idioma à direita. O controle de dispositivo pertence à prévia; o contêiner acompanha a largura desktop/mobile. A scrollbar exportada por `@solaria.network/gallery-ui/scrollbar.css` também é aplicada aos HTMLs da galeria, para funcionar dentro do iframe sem alterar os estilos dos e-mails enviados.
+A scrollbar exportada por `@solaria.network/web-lib/scrollbar.css` também é aplicada aos HTMLs da galeria, para funcionar dentro do iframe sem alterar os estilos dos e-mails enviados.
 
-As imagens de exemplo ficam em `assets/mocks/images/` (cópias do `mocks-warehouse`); o gerador as publica em `images/` e aponta o `modelImageUrl` do exemplo para elas, usando `GALLERY_BASE_URL` (no workflow, a URL do Pages) ou o endereço padrão de `solierrr.github.io/api-email`.
+As imagens de exemplo ficam em `assets/mocks/images/` (cópias do `mocks-warehouse`); o gerador as publica em `images/` e aponta o `modelImageUrl` do exemplo para elas, usando `GALLERY_BASE_URL` ou o endereço padrão de `solierrr.github.io/api-email`.
 
-O workflow `Email gallery` valida a geração em pull requests e publica no GitHub Pages após push em `qa`. O repositório deve ter Pages configurado para GitHub Actions. A galeria é pública e não consulta mensagens recebidas ou credenciais do ambiente QA.
+O workflow `Preview` (`.github/workflows/preview.yml`) chama o workflow reutilizável de galerias do repositório `.github`: valida a geração (typecheck e build) em pull requests e publica no GitHub Pages após push na `main`. O repositório deve ter Pages configurado para GitHub Actions. A galeria é pública e não consulta mensagens recebidas ou credenciais do ambiente QA.
 
 ## Verificação do serviço
 

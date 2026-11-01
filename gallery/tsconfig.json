@@ -11,5 +11,5 @@
     "types": ["vite/client"],
     "esModuleInterop": true
   },
-  "include": ["*.tsx"]
+  "include": ["*.tsx", "*.ts"]
 }
