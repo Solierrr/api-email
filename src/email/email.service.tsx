@@ -3,7 +3,7 @@ import ActionEmail from "./templates/ActionEmail.js";
 import OperationalAlertEmail, {
   alertSubject,
 } from "./templates/OperationalAlertEmail.js";
-import { getEmailContent } from "./templates/email.content.js";
+import { formatSubject, getEmailContent } from "./templates/email.content.js";
 import type { EmailRequest } from "./email.schema.js";
 
 export interface EmailMessage {
@@ -27,6 +27,11 @@ const plainTextOptions = {
   })),
 };
 
+function subjectOf(request: EmailRequest) {
+  const content = getEmailContent(request.locale, request.template);
+  return formatSubject(content.purpose, content.subject);
+}
+
 export async function renderEmail(request: EmailRequest) {
   const alert = request.template === "operational-alert";
   const html = await render(
@@ -37,9 +42,7 @@ export async function renderEmail(request: EmailRequest) {
     ),
   );
   return {
-    subject: alert
-      ? alertSubject(request)
-      : getEmailContent(request.locale, request.template).subject,
+    subject: alert ? alertSubject(request) : subjectOf(request),
     html,
     text: toPlainText(html, plainTextOptions),
   };

@@ -121,3 +121,39 @@ describe("text version", () => {
     },
   );
 });
+
+describe("subject format", () => {
+  const expected = {
+    "pt-BR": {
+      "email-verification": "[Conta] Confirmação de e-mail",
+      "password-reset": "[Conta] Redefinição de senha",
+      "user-deletion": "[Conta] Exclusão de conta",
+      "company-invitation": "[Convite] Convite de empresa",
+      "project-invitation": "[Convite] Convite de projeto",
+      "registration-approved": "[Cadastro] Cadastro aprovado",
+      "registration-rejected": "[Cadastro] Cadastro reprovado",
+      "solar-model-approved": "[Modelo] Modelo solar aprovado",
+      "company-email-verification": "[Empresa] E-mail da empresa",
+    },
+  } as const;
+  it.each(Object.entries(expected["pt-BR"]))(
+    "%s has the subject %s",
+    async (template, subject) => {
+      const request = emailSchema.parse({
+        ...mock(template as never),
+        locale: "pt-BR",
+      });
+      expect((await renderEmail(request)).subject).toBe(subject);
+    },
+  );
+  it.each(emailTemplates)(
+    "%s follows [purpose] title in every language",
+    async (template) => {
+      for (const locale of ["pt-BR", "en-US", "es-ES"] as const) {
+        const request = emailSchema.parse({ ...mock(template), locale });
+        const { subject } = await renderEmail(request);
+        expect(subject).toMatch(/^\[[^\]]+\] \S/);
+      }
+    },
+  );
+});
