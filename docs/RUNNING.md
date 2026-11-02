@@ -1,70 +1,79 @@
+<p align="center">
+  <img src="../assets/readme/banners/fastify.png" alt="Fastify" width="100%">
+</p>
+
 # Execução local
 
-Requisitos: Node.js 24+, npm e Docker para captura SMTP.
+A instalação de Node e npm segue o [guia da stack TypeScript](https://github.com/Solierrr/docs-warehouse/blob/main/readme/running/TYPESCRIPT.md). Este serviço usa Node.js 24, Fastify e `.env` na raiz. Seu desenvolvimento não depende de Vite ou Firebase.
 
-```sh
+## Pré-requisitos e configuração
+
+Use Node.js 24 ou superior, npm e Docker com Compose para a captura SMTP local. O Makefile também exige `make` e um shell compatível com `sh`.
+
+```bash
 npm ci
-cp .env.example .env
 ```
 
-No PowerShell: `Copy-Item .env.example .env`. Gere uma chave aleatória de pelo menos 32 caracteres e coloque em SERVICE_KEY_API_CORE (a chave que o api-core envia em X-Service-Key); SERVICE_KEY_API_AUTH é opcional. O .env é ignorado pelo Git.
+Copie o `.env.example` para `.env`, com `Copy-Item .env.example .env` no PowerShell, e preencha os dados locais, configurando a chave do chamador local sem publicar o valor. O `.env` é ignorado pelo Git.
 
-## Reload local
+| Nomes | Uso |
+|---|---|
+| `SERVICE_KEY_API_CORE`, `SERVICE_KEY_API_AUTH` | chaves dos chamadores aceitos |
+| `EMAIL_FROM` | remetente validado como endereço de e-mail |
+| `EMAIL_ALLOWED_ORIGINS` | origens completas permitidas para links de ação |
+| `EMAIL_TRANSPORT` | seleção de SMTP ou Brevo |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` | conexão SMTP |
+| `SMTP_USER`, `SMTP_PASSWORD` | par opcional de autenticação SMTP |
+| `BREVO_API_KEY` | credencial obrigatória quando Brevo é selecionado |
+| `APP_ENV`, `NODE_ENV`, `HOST`, `PORT` | ambiente e escuta HTTP |
+| `DOCS_ENABLED`, `CORS_ALLOWED_ORIGINS` | documentação pública e origens do navegador |
 
-```sh
+O `make vault` existe, mas `VAULT_FOLDERS` está vazio, e sem as pastas autorizadas o comando não gera o `.env`, por isso as configurações locais vêm do `.env.example`. O procedimento comum está no [guia de segredos](https://github.com/Solierrr/docs-warehouse/blob/main/readme/infisical/README.md).
+
+## Servidor e caixa local
+
+Com a configuração local preparada, inicie o Mailpit e o servidor.
+
+```bash
 docker compose up -d mailpit
 npm run dev
 ```
 
-API localhost:8083, caixa Mailpit http://localhost:8025, SMTP localhost:1025. Compose não configura relay externo. GET /ready verifica SMTP. Swagger em http://localhost:8083/docs e contrato em http://localhost:8083/openapi.json; no Authorize, informe a chave de SERVICE_KEY_API_CORE. No Bruno preencha serviceKey apenas localmente; use preview antes de enviar.
+A API escuta em [localhost:8083](http://localhost:8083), o Swagger fica em [localhost:8083/docs](http://localhost:8083/docs), a caixa de captura em [localhost:8025](http://localhost:8025) e o SMTP local na porta 1025. No Swagger, Authorize recebe a chave do chamador. A [coleção Bruno](https://github.com/Solierrr/api-email/blob/main/http/README.md) usa a variável local `serviceKey`.
 
-## Exemplos na caixa local
+Para executar tudo em containers, encerre o processo npm que usa a porta 8083 e execute `docker compose up --build -d`. O compose utiliza o modo de links de desenvolvimento, mesmo com Node configurado como runtime de produção. As mensagens capturadas não têm volume persistente declarado.
 
-Com a API e o Mailpit rodando, execute `npm run preview:seed`. Cada JSON em `assets/mocks/emails/` representa uma chamada de envio e aparece como um e-mail em http://localhost:8025. Há um exemplo por modelo, com nome descritivo; o de modelo de placa solar aprovado mostra uma imagem do `mocks-warehouse` (origem em `assets/mocks/README.md`). Edite ou adicione arquivos e execute novamente; cada execução cria novas mensagens e preserva as anteriores.
+## Prévia e exemplos
 
-O comando valida todos os exemplos pelo endpoint de preview antes de iniciar os envios. Usa SERVICE_KEY_API_CORE do .env, chama apenas a API em loopback e exige APP_ENV=dev com SMTP local na porta 1025. Links devem corresponder a EMAIL_ALLOWED_ORIGINS. Os tokens dos exemplos são fictícios.
+Use primeiro `POST /emails/preview`, conforme [API.md](./API.md). A resposta permite conferir assunto, HTML e texto sem pedir envio ao transporte.
 
-## Alertas do Grafana localmente
+Com API e Mailpit locais ativos, `npm run preview:seed` valida os nove arquivos em `assets/mocks/emails/` pelo endpoint de prévia e, depois, envia cada um à caixa local. Cada execução acrescenta novas mensagens. O script exige ambiente de desenvolvimento, SMTP local na porta 1025 e chave de serviço, e chama somente a API em loopback.
 
-Defina SERVICE_KEY_GRAFANA no .env (>=32 caracteres) e, para ver os e-mails no Mailpit, ALERT_EMAIL_TO com endereços de teste e ALERT_GRAFANA_URL=http://localhost:3000. As rotas `/alerts/*/preview` funcionam sem as chaves do Jira e do WhatsApp; use as chamadas da pasta `http/alerts/` no Bruno. Para exercitar o Jira ou o WhatsApp sem as contas reais, aponte JIRA_BASE_URL para um receptor local de teste (HTTP só é aceito com APP_ENV=dev). Rotas sem as variáveis do canal respondem 503 CHANNEL_NOT_CONFIGURED.
+## Comandos e verificações
 
-## Tudo em Docker
+Os alvos do Makefile encaminham para os scripts npm.
 
-Encerre npm run dev para liberar 8083:
+| Comando | Resultado |
+|---|---|
+| `make install` | instala o lockfile com `npm ci` |
+| `make dev` | inicia reload com `tsx` e leitura de `.env` |
+| `make test` | executa Vitest |
+| `make lint` | typecheck e verificação de formatação |
+| `make build` | compila TypeScript para `dist/` |
+| `make openapi` | gera `openapi.yaml` com transporte injetado, sem SMTP nem segredo real |
+| `make format` | aplica Prettier |
+| `make ci` | lint, testes e build |
 
-```sh
-docker compose up --build -d
-```
+Os comandos equivalentes são `npm run typecheck`, `npm test`, `npm run build` e `npm run format:check`. Os testes usam transporte injetado e chamadas Brevo substituídas por mocks, sem enviar mensagens externas. `npm start` executa `dist/server.js` e precisa receber variáveis do processo. Para carregar o arquivo local nesse caminho, use `node --env-file=.env dist/server.js`.
 
-Compose usa APP_ENV=dev para links HTTP locais, mesmo com runtime Node de produção. Chave vem do .env, que não entra na imagem. A caixa local é efêmera quando o container é removido.
+## Desenvolvimento dos modelos
 
-Sem Docker, configure um capturador SMTP autorizado nas variáveis e use npm run dev.
+A biblioteca visual é consumida como pacote local em `vendor/`. Seu arquivo exato está no [`package.json`](https://github.com/Solierrr/api-email/blob/main/package.json). Uma atualização desse pacote exige novo empacotamento da biblioteca e atualização do pacote consumido, seguida dos testes e da revisão no Mailpit. Não é necessário publicar a biblioteca no registro para usar esse pacote local.
 
-## Atualizar o UI kit local
+Para um modelo novo, inclua validação em `email.schema.ts`, textos em todos os idiomas, composição em `ActionEmail.tsx` e exemplo em `assets/mocks/emails/`. Reuse os componentes visuais de e-mail e não carregue o CSS de browser. Os testes devem conferir campos obrigatórios, escape e renderização.
 
-O serviço consome `@solaria.network/web-lib/email` por meio do pacote local versionado em `vendor/`. Para atualizar, execute `npm run build` e `npm pack --pack-destination ../api-email/vendor` na `web-lib`, atualize o caminho do tarball em `package.json` e execute `npm install` neste serviço. Reinicie a API e rode `npm run preview:seed`. O Docker copia o diretório `vendor` antes de executar `npm ci`; nenhuma publicação npm é necessária.
+## Problemas conhecidos
 
-## Galeria estática
+Chaves curtas, remetente inválido, origens malformadas e transporte sem a credencial ou host necessário impedem a partida. Credenciais SMTP devem ser fornecidas em par. Fora de desenvolvimento, origens de ação precisam usar HTTPS.
 
-A galeria (preview dos e-mails) fica em `gallery/`, com `package.json` próprio. Para gerar: `npm run build` na raiz (compila o serviço) e, em `gallery/`, `npm ci` e `npm run build`, que grava `gallery/dist/`. `npm run dev` abre a galeria em desenvolvimento e `npm run preview`, o resultado. O resultado pode ser servido por qualquer servidor HTTP estático. Não é necessário `.env`, API, SMTP ou Mailpit.
-
-O gerador (`gallery/scripts/build-emails.mjs`) reutiliza `renderEmail`, os componentes de `@solaria.network/web-lib/email` e os exemplos de `assets/mocks/emails/`. Gera os três idiomas para cada template registrado, substitui destinatário e URL de ação por dados de demonstração e desativa os links dentro dos e-mails. A prévia fica em um iframe com sandbox.
-
-A interface usa a casca padrão dos previews (`@solaria.network/web-lib/gallery`): cabeçalho com o link para o portal de previews, menu lateral com busca, rodapé com repositório, versão e commit, tema claro e escuro e idioma pt-BR, en-US e es-ES. A galeria só entrega o conteúdo: a lista de templates, a moldura de dispositivo (desktop e mobile, que continua aqui) e o iframe. Os assuntos dos templates são curtos e não repetem o nome do projeto. O build usa caminhos relativos, então serve em `solierrr.github.io/api-email/` e no portal de documentação. O `gallery.json` da raiz descreve o preview para o portal.
-
-A scrollbar exportada por `@solaria.network/web-lib/scrollbar.css` também é aplicada aos HTMLs da galeria, para funcionar dentro do iframe sem alterar os estilos dos e-mails enviados.
-
-As imagens de exemplo ficam em `assets/mocks/images/` (cópias do `mocks-warehouse`); o gerador as publica em `images/` e aponta o `modelImageUrl` do exemplo para elas, usando `GALLERY_BASE_URL` ou o endereço padrão de `solierrr.github.io/api-email`.
-
-O workflow `Preview` (`.github/workflows/preview.yml`) chama o workflow reutilizável de galerias do repositório `.github`: valida a geração (typecheck e build) em pull requests e publica no GitHub Pages após push na `main`. O repositório deve ter Pages configurado para GitHub Actions. A galeria é pública e não consulta mensagens recebidas ou credenciais do ambiente QA.
-
-## Verificação do serviço
-
-```sh
-npm run typecheck
-npm test
-npm run build
-npm run format:check
-```
-
-Testes automatizados não enviam e-mails externos. npm start executa dist/server.js; injete variáveis no processo ou use `node --env-file=.env dist/server.js` localmente.
+`/ready` responde 503 se a verificação do transporte falha ou ultrapassa a espera de dois segundos. A prévia não envia e-mail, mas a configuração da aplicação continua sendo validada na partida. A imagem atual não instala o CLI do Infisical, embora o entrypoint tenha um caminho que o usa. Os detalhes estão em [DEPLOY.md](./DEPLOY.md).
