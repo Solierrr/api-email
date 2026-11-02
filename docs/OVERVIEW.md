@@ -10,17 +10,17 @@ O serviço centraliza as mensagens transacionais enviadas às pessoas que usam a
 
 Os modelos cobrem os acontecimentos abaixo, em português, inglês e espanhol.
 
-| Mensagem | O que apresenta |
-|---|---|
-| Confirmação de e-mail pessoal | link para confirmar o endereço informado |
-| Recuperação de senha | link para continuar a redefinição |
-| Convite para empresa | nome da empresa e ação para continuar o convite |
-| Convite para projeto | projeto, papel da pessoa, validade e link do convite |
-| Exclusão da conta | confirmação do encerramento, sem botão de ação |
-| Cadastro aprovado | aviso de aprovação e link para consultar o cadastro |
-| Cadastro reprovado | motivo da reprovação e link do cadastro |
-| Modelo de placa aprovado | nome do modelo, imagem e dados técnicos quando fornecidos |
-| Confirmação de e-mail empresarial | nome da empresa e link de confirmação |
+| Mensagem                          | O que apresenta                                           |
+| --------------------------------- | --------------------------------------------------------- |
+| Confirmação de e-mail pessoal     | link para confirmar o endereço informado                  |
+| Recuperação de senha              | link para continuar a redefinição                         |
+| Convite para empresa              | nome da empresa e ação para continuar o convite           |
+| Convite para projeto              | projeto, papel da pessoa, validade e link do convite      |
+| Exclusão da conta                 | confirmação do encerramento, sem botão de ação            |
+| Cadastro aprovado                 | aviso de aprovação e link para consultar o cadastro       |
+| Cadastro reprovado                | motivo da reprovação e link do cadastro                   |
+| Modelo de placa aprovado          | nome do modelo, imagem e dados técnicos quando fornecidos |
+| Confirmação de e-mail empresarial | nome da empresa e link de confirmação                     |
 
 ## Regras
 

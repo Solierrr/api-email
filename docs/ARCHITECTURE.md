@@ -23,32 +23,32 @@ flowchart LR
 
 Os módulos separam configuração, contrato, apresentação e entrega ao transporte.
 
-| Caminho | Papel |
-|---|---|
-| `src/config/config.ts` | valida ambiente, chaves, remetente e origens permitidas |
-| `src/config/smtp.ts`, `brevo.ts` | criação e verificação dos transportes |
-| `src/http/` | OpenAPI, ProblemDetail e guarda de chave de serviço |
-| `src/email/email.schema.ts` | corpo estrito e regras de links e modelos |
-| `src/email/email.routes.ts` | prévia, envio e conversão de falhas |
-| `src/email/email.service.tsx` | renderização e chamada ao transporte |
-| `src/email/templates/` | composição e textos nos três idiomas |
-| `src/email/components/` | cartões de detalhes e imagem incorporada de referência |
-| `src/app.ts`, `server.ts` | aplicação injetável para testes, health e shutdown |
-| `vendor/` | pacote local da biblioteca visual compartilhada |
-| `http/`, `assets/mocks/` | coleção Bruno e payloads de demonstração |
+| Caminho                          | Papel                                                   |
+| -------------------------------- | ------------------------------------------------------- |
+| `src/config/config.ts`           | valida ambiente, chaves, remetente e origens permitidas |
+| `src/config/smtp.ts`, `brevo.ts` | criação e verificação dos transportes                   |
+| `src/http/`                      | OpenAPI, ProblemDetail e guarda de chave de serviço     |
+| `src/email/email.schema.ts`      | corpo estrito e regras de links e modelos               |
+| `src/email/email.routes.ts`      | prévia, envio e conversão de falhas                     |
+| `src/email/email.service.tsx`    | renderização e chamada ao transporte                    |
+| `src/email/templates/`           | composição e textos nos três idiomas                    |
+| `src/email/components/`          | cartões de detalhes e imagem incorporada de referência  |
+| `src/app.ts`, `server.ts`        | aplicação injetável para testes, health e shutdown      |
+| `vendor/`                        | pacote local da biblioteca visual compartilhada         |
+| `http/`, `assets/mocks/`         | coleção Bruno e payloads de demonstração                |
 
 ## Integrações
 
 O serviço não valida JWT de pessoas nem consulta cadastros para escolher destinatários.
 
-| Com quem | Direção | Protocolo | Autenticação |
-|---|---|---|---|
-| `api-core` | chama este serviço | HTTP em `/emails` | chave de serviço e cabeçalho legado presentes no worker atual |
-| `api-auth` | cliente implementado chama este serviço | HTTP em `/emails` | cliente atual ainda envia `X-API-Key` |
-| SMTP | este serviço chama quando selecionado | SMTP | credenciais opcionais, TLS obrigatório fora de desenvolvimento |
-| Brevo | este serviço chama quando selecionado | HTTPS | `BREVO_API_KEY` no cabeçalho `api-key` |
-| Mailpit | captura local do envio SMTP | SMTP | sem credencial no compose local |
-| `web-sandbox` | lê contrato pelo navegador no QA | HTTP com CORS | contrato sem chave, operações de e-mail exigem chave de serviço |
+| Com quem      | Direção                                 | Protocolo         | Autenticação                                                    |
+| ------------- | --------------------------------------- | ----------------- | --------------------------------------------------------------- |
+| `api-core`    | chama este serviço                      | HTTP em `/emails` | chave de serviço e cabeçalho legado presentes no worker atual   |
+| `api-auth`    | cliente implementado chama este serviço | HTTP em `/emails` | cliente atual ainda envia `X-API-Key`                           |
+| SMTP          | este serviço chama quando selecionado   | SMTP              | credenciais opcionais, TLS obrigatório fora de desenvolvimento  |
+| Brevo         | este serviço chama quando selecionado   | HTTPS             | `BREVO_API_KEY` no cabeçalho `api-key`                          |
+| Mailpit       | captura local do envio SMTP             | SMTP              | sem credencial no compose local                                 |
+| `web-sandbox` | lê contrato pelo navegador no QA        | HTTP com CORS     | contrato sem chave, operações de e-mail exigem chave de serviço |
 
 As rotas aceitam os chamadores `api-core` e `api-auth` em ambas as operações. As chaves configuradas têm de 32 a 256 caracteres e são comparadas após hash com `timingSafeEqual`. Sem chave válida, o pedido é recusado. O padrão compartilhado está em [SERVICE_TO_SERVICE_AUTH.md](https://github.com/Solierrr/docs-warehouse/blob/main/docs/flows/SERVICE_TO_SERVICE_AUTH.md).
 

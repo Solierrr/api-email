@@ -16,17 +16,17 @@ npm ci
 
 Copie o `.env.example` para `.env`, com `Copy-Item .env.example .env` no PowerShell, e preencha os dados locais, configurando a chave do chamador local sem publicar o valor. O `.env` é ignorado pelo Git.
 
-| Nomes | Uso |
-|---|---|
-| `SERVICE_KEY_API_CORE`, `SERVICE_KEY_API_AUTH` | chaves dos chamadores aceitos |
-| `EMAIL_FROM` | remetente validado como endereço de e-mail |
-| `EMAIL_ALLOWED_ORIGINS` | origens completas permitidas para links de ação |
-| `EMAIL_TRANSPORT` | seleção de SMTP ou Brevo |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` | conexão SMTP |
-| `SMTP_USER`, `SMTP_PASSWORD` | par opcional de autenticação SMTP |
-| `BREVO_API_KEY` | credencial obrigatória quando Brevo é selecionado |
-| `APP_ENV`, `NODE_ENV`, `HOST`, `PORT` | ambiente e escuta HTTP |
-| `DOCS_ENABLED`, `CORS_ALLOWED_ORIGINS` | documentação pública e origens do navegador |
+| Nomes                                          | Uso                                               |
+| ---------------------------------------------- | ------------------------------------------------- |
+| `SERVICE_KEY_API_CORE`, `SERVICE_KEY_API_AUTH` | chaves dos chamadores aceitos                     |
+| `EMAIL_FROM`                                   | remetente validado como endereço de e-mail        |
+| `EMAIL_ALLOWED_ORIGINS`                        | origens completas permitidas para links de ação   |
+| `EMAIL_TRANSPORT`                              | seleção de SMTP ou Brevo                          |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`        | conexão SMTP                                      |
+| `SMTP_USER`, `SMTP_PASSWORD`                   | par opcional de autenticação SMTP                 |
+| `BREVO_API_KEY`                                | credencial obrigatória quando Brevo é selecionado |
+| `APP_ENV`, `NODE_ENV`, `HOST`, `PORT`          | ambiente e escuta HTTP                            |
+| `DOCS_ENABLED`, `CORS_ALLOWED_ORIGINS`         | documentação pública e origens do navegador       |
 
 O `make vault` existe, mas `VAULT_FOLDERS` está vazio, e sem as pastas autorizadas o comando não gera o `.env`, por isso as configurações locais vêm do `.env.example`. O procedimento comum está no [guia de segredos](https://github.com/Solierrr/docs-warehouse/blob/main/readme/infisical/README.md).
 
@@ -53,16 +53,16 @@ Com API e Mailpit locais ativos, `npm run preview:seed` valida os nove arquivos 
 
 Os alvos do Makefile encaminham para os scripts npm.
 
-| Comando | Resultado |
-|---|---|
-| `make install` | instala o lockfile com `npm ci` |
-| `make dev` | inicia reload com `tsx` e leitura de `.env` |
-| `make test` | executa Vitest |
-| `make lint` | typecheck e verificação de formatação |
-| `make build` | compila TypeScript para `dist/` |
+| Comando        | Resultado                                                              |
+| -------------- | ---------------------------------------------------------------------- |
+| `make install` | instala o lockfile com `npm ci`                                        |
+| `make dev`     | inicia reload com `tsx` e leitura de `.env`                            |
+| `make test`    | executa Vitest                                                         |
+| `make lint`    | typecheck e verificação de formatação                                  |
+| `make build`   | compila TypeScript para `dist/`                                        |
 | `make openapi` | gera `openapi.yaml` com transporte injetado, sem SMTP nem segredo real |
-| `make format` | aplica Prettier |
-| `make ci` | lint, testes e build |
+| `make format`  | aplica Prettier                                                        |
+| `make ci`      | lint, testes e build                                                   |
 
 Os comandos equivalentes são `npm run typecheck`, `npm test`, `npm run build` e `npm run format:check`. Os testes usam transporte injetado e chamadas Brevo substituídas por mocks, sem enviar mensagens externas. `npm start` executa `dist/server.js` e precisa receber variáveis do processo. Para carregar o arquivo local nesse caminho, use `node --env-file=.env dist/server.js`.
 
