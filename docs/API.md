@@ -18,12 +18,12 @@ O serviço não oferece login por JWT, e a chave de serviço pertence ao backend
 
 O contrato tem dois grupos de rotas.
 
-| Grupo | Operação | Resultado |
-|---|---|---|
-| E-mails | `POST /emails/preview` | assunto, HTML e texto sem contato com o transporte |
-| E-mails | `POST /emails` | HTTP 200 com `status` igual a `accepted` e `messageId` após aceite do transporte |
-| Saúde | `GET /health` | processo e versão, sem autenticação |
-| Saúde | `GET /ready` | verificação do transporte, sem autenticação |
+| Grupo   | Operação               | Resultado                                                                        |
+| ------- | ---------------------- | -------------------------------------------------------------------------------- |
+| E-mails | `POST /emails/preview` | assunto, HTML e texto sem contato com o transporte                               |
+| E-mails | `POST /emails`         | HTTP 200 com `status` igual a `accepted` e `messageId` após aceite do transporte |
+| Saúde   | `GET /health`          | processo e versão, sem autenticação                                              |
+| Saúde   | `GET /ready`           | verificação do transporte, sem autenticação                                      |
 
 O estado `accepted` não comprova a entrega na caixa postal, e como o serviço não tem identificador de idempotência, histórico consultável nem nova tentativa automática, repetir o pedido depois de um timeout pode duplicar a mensagem. <!-- PENDENTE: 4 -->
 
@@ -31,14 +31,14 @@ O estado `accepted` não comprova a entrega na caixa postal, e como o serviço n
 
 Os identificadores do contrato correspondem aos nove modelos de produto.
 
-| Identificador | Uso |
-|---|---|
-| `email-verification`, `password-reset` | confirmação de endereço e recuperação de senha |
-| `company-invitation`, `company-email-verification` | convite e confirmação empresarial |
-| `project-invitation` | convite com projeto, papel e validade |
-| `user-deletion` | aviso de exclusão, sem botão de ação |
-| `registration-approved`, `registration-rejected` | resultado da análise de cadastro |
-| `solar-model-approved` | aprovação de modelo de placa |
+| Identificador                                      | Uso                                            |
+| -------------------------------------------------- | ---------------------------------------------- |
+| `email-verification`, `password-reset`             | confirmação de endereço e recuperação de senha |
+| `company-invitation`, `company-email-verification` | convite e confirmação empresarial              |
+| `project-invitation`                               | convite com projeto, papel e validade          |
+| `user-deletion`                                    | aviso de exclusão, sem botão de ação           |
+| `registration-approved`, `registration-rejected`   | resultado da análise de cadastro               |
+| `solar-model-approved`                             | aprovação de modelo de placa                   |
 
 O corpo aceita um destinatário e usa `pt-BR` como idioma padrão. Também aceita `en-US` e `es-ES`. Nome e contexto adicional são validados pelo modelo escolhido. Os campos obrigatórios por modelo estão no contrato gerado, sem necessidade de enviar HTML, assunto ou remetente.
 
@@ -71,15 +71,15 @@ A resposta 200 traz `subject`, `html` e `text`, e para enviar a mesma mensagem b
 
 Os erros HTTP usam `application/problem+json`, com `errorCode`, `timestamp` e `requestId`, conforme o [contrato de erro](https://github.com/Solierrr/docs-warehouse/blob/main/docs/standards/ERRORS.md). `errors` aparece em validação. O [catálogo central](https://github.com/Solierrr/docs-warehouse/blob/main/docs/standards/ERROR_CODES.md) descreve os códigos compartilhados e os específicos do serviço.
 
-| Status e código | Quando ocorre |
-|---|---|
-| 400 `INVALID_ACTION_URL` | link fora das origens ou protocolos permitidos |
-| 401 `UNAUTHENTICATED` | chave ausente ou inválida |
-| 403 `FORBIDDEN` | chamador reconhecido, mas não autorizado pela rota |
-| 413 `PAYLOAD_TOO_LARGE` | corpo acima do limite |
-| 415 `UNSUPPORTED_MEDIA_TYPE` | conteúdo em formato não aceito |
-| 422 `VALIDATION_FAILED` ou `MALFORMED_REQUEST` | corpo inválido ou JSON ilegível |
-| 503 `EMAIL_SEND_FAILED` | falha durante renderização ou envio no caminho de envio |
-| 500 `INTERNAL_ERROR` | falha inesperada não convertida pela rota |
+| Status e código                                | Quando ocorre                                           |
+| ---------------------------------------------- | ------------------------------------------------------- |
+| 400 `INVALID_ACTION_URL`                       | link fora das origens ou protocolos permitidos          |
+| 401 `UNAUTHENTICATED`                          | chave ausente ou inválida                               |
+| 403 `FORBIDDEN`                                | chamador reconhecido, mas não autorizado pela rota      |
+| 413 `PAYLOAD_TOO_LARGE`                        | corpo acima do limite                                   |
+| 415 `UNSUPPORTED_MEDIA_TYPE`                   | conteúdo em formato não aceito                          |
+| 422 `VALIDATION_FAILED` ou `MALFORMED_REQUEST` | corpo inválido ou JSON ilegível                         |
+| 503 `EMAIL_SEND_FAILED`                        | falha durante renderização ou envio no caminho de envio |
+| 500 `INTERNAL_ERROR`                           | falha inesperada não convertida pela rota               |
 
 O 503 de `/ready` é JSON com `status` igual a `DOWN`, sem o envelope de erro. O código `PAYLOAD_TOO_LARGE` já está no contrato deste serviço, mas ainda não consta no catálogo central analisado. Isso está registrado em [STATUS.md](./STATUS.md).

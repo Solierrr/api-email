@@ -10,11 +10,11 @@ O processo compartilhado está em [QA_RENDER.md](https://github.com/Solierrr/doc
 
 Os destinos abaixo vêm do contrato e dos manifestos, sem comprovação de disponibilidade ao vivo.
 
-| Ambiente | Onde | Endereço |
-|---|---|---|
-| Local | processo Node ou compose | [API local](http://localhost:8083) |
-| QA | Render | [API de QA](https://api-email-6swz.onrender.com) |
-| Produção declarada | Service interno no GKE | `http://api-email:8083`, acessível dentro do cluster |
+| Ambiente           | Onde                     | Endereço                                             |
+| ------------------ | ------------------------ | ---------------------------------------------------- |
+| Local              | processo Node ou compose | [API local](http://localhost:8083)                   |
+| QA                 | Render                   | [API de QA](https://api-email-6swz.onrender.com)     |
+| Produção declarada | Service interno no GKE   | `http://api-email:8083`, acessível dentro do cluster |
 
 O QA está publicado no Render, e a main contém os dois transportes, com a escolha feita pela configuração do ambiente.
 
