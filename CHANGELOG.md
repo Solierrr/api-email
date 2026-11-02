@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://github.com/Solierrr/api-email/compare/v0.5.0...v0.6.0) (2026-11-02)
+
+
+### Features
+
+* describe the service for the alerts routing ([b81f25a](https://github.com/Solierrr/api-email/commit/b81f25a662255035da3350204a2cd2d3a518d958))
+* standardize the email preview on the shared gallery shell ([e78e8c0](https://github.com/Solierrr/api-email/commit/e78e8c06b039ad23b4a62cbc95a8a366d8498b33))
+
+
+### Bug Fixes
+
+* grant the pages permissions only to the preview job ([a69ceb0](https://github.com/Solierrr/api-email/commit/a69ceb0bd4847f7ff7622b199fa63f4398f582c4))
+
 ## [0.5.0](https://github.com/Solierrr/api-email/compare/v0.4.0...v0.5.0) (2026-11-01)
 
 

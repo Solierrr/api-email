@@ -6,7 +6,7 @@ info:
     no Jira, avisar a equipe por e-mail e por WhatsApp. É chamado só por outros
     serviços (api-core e api-auth nos e-mails; o Grafana nos alertas):
     autentique com a chave de serviço no cabeçalho X-Service-Key."
-  version: 0.5.0 # x-release-please-version
+  version: 0.6.0 # x-release-please-version
   contact:
     name: Solaria
     url: https://github.com/Solierrr
