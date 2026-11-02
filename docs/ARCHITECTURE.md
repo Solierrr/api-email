@@ -1,67 +1,85 @@
+<p align="center">
+  <img src="../assets/readme/banners/fastify.png" alt="Fastify" width="100%">
+</p>
+
 # Arquitetura
 
-```text
-src/
-  config/config.ts
-  config/smtp.ts
-  email/
-    email.schema.ts
-    email.routes.ts
-    email.service.tsx
-    templates/ActionEmail.tsx
-    templates/email.content.ts
-  alerts/
-    alerts.schema.ts
-    alerts.model.ts
-    alerts.content.ts
-    adf.ts
-    jira.client.ts
-    incident.service.ts
-    whatsapp.client.ts
-    AlertEmail.tsx
-    alert-email.service.tsx
-    alerts.routes.ts
-  http/
-    openapi.ts
-    problem.ts
-    service-key.ts
-  app.ts
-  server.ts
+A API usa Node.js 24 e TypeScript com Fastify. As duas rotas de e-mail compartilham autenticação e validação Zod. React Email gera HTML e texto simples. A interface `EmailTransport` separa a renderização do envio, com implementações SMTP por Nodemailer e HTTPS para Brevo.
+
+```mermaid
+flowchart LR
+    Core[api-core] -->|HTTP + X-Service-Key ou chave legada| API[Fastify]
+    Auth[api-auth] -->|HTTP + chave legada no cliente atual| API
+    API --> Chave[Autenticação e Zod]
+    Chave --> Render[React Email]
+    Kit[Biblioteca visual local em vendor] --> Render
+    Render --> Preview[Resposta de prévia]
+    Render --> Transporte[EmailTransport]
+    Transporte -->|SMTP com TLS e autenticação conforme ambiente| SMTP[Servidor SMTP]
+    Transporte -->|HTTPS + api-key| Brevo[Brevo]
 ```
 
-Config valida variáveis antes de iniciar. Schema define contrato estrito e verifica links. Routes declara o schema OpenAPI de cada rota (gerado do schema zod, que continua sendo a única validação) e converte falhas em HTTP. http/ reúne o contrato OpenAPI e o Swagger, o formato de erro ProblemDetail e a autenticação por chave de serviço. Service renderiza e aguarda SMTP. Templates compartilham layout e textos. App permite transporte injetado em testes; server gerencia HTTP e shutdown.
+## Arquivos
 
-React Email gera HTML de e-mail e texto simples. Nome/empresa são escapados pelo React; não existe entrada de HTML arbitrário. Layout, texto e ação vêm de @solaria.network/web-lib/email, com estilos inline baseados nos tokens do UI kit compartilhado. O serviço mantém o conteúdo dos templates e idiomas; a lib mantém os componentes visuais. A entrada de browser da lib não é importada no serviço.
+Os módulos separam configuração, contrato, apresentação e entrega ao transporte.
 
-Remetente vem da configuração e o SMTP tem timeouts. Cada chamador tem a própria chave (X-Service-Key, SERVICE_KEY_API_CORE e SERVICE_KEY_API_AUTH), comparada em tempo constante; sem nenhuma chave configurada, tudo é recusado. A chave legada EMAIL_API_KEY, se configurada, é aceita em X-API-Key como api-core só até o api-core enviar X-Service-Key. Logs registram rota/template/messageId sem destinatários, corpo, links de ação ou credenciais. Não há login de pessoas no serviço; o CORS só libera as origens de CORS_ALLOWED_ORIGINS, para o web-sandbox ler o contrato no QA.
+| Caminho | Papel |
+|---|---|
+| `src/config/config.ts` | valida ambiente, chaves, remetente e origens permitidas |
+| `src/config/smtp.ts`, `brevo.ts` | criação e verificação dos transportes |
+| `src/http/` | OpenAPI, ProblemDetail e guarda de chave de serviço |
+| `src/email/email.schema.ts` | corpo estrito e regras de links e modelos |
+| `src/email/email.routes.ts` | prévia, envio e conversão de falhas |
+| `src/email/email.service.tsx` | renderização e chamada ao transporte |
+| `src/email/templates/` | composição e textos nos três idiomas |
+| `src/email/components/` | cartões de detalhes e imagem incorporada de referência |
+| `src/app.ts`, `server.ts` | aplicação injetável para testes, health e shutdown |
+| `vendor/` | pacote local da biblioteca visual compartilhada |
+| `http/`, `assets/mocks/` | coleção Bruno e payloads de demonstração |
 
-O layout compartilhado segue a composição centralizada das telas de acesso: logo animada, título, conteúdo e ação principal, sobre o fundo uniforme com canvas nas laterais. Tipografia vem dos tokens da lib, com Plus Jakarta Sans do Google Fonts e fallback sans-serif. A logo animada é enviada como GIF incorporado; o primeiro quadro precisa funcionar como marca estática para clientes que não reproduzem animação. Preview renderiza as imagens incorporadas como data URI; attachDataUrls no transporte SMTP converte as imagens em partes CID, sem carregar arquivos/URLs externos no servidor. Payloads não aceitam anexos.
+## Integrações
 
-DetailCard organiza empresa, motivo de reprovação e modelo aprovado. O modelo aceita modelManufacturer, modelPowerWatts e modelImageUrl opcionais; a imagem deve ser HTTPS sem credenciais e é carregada pelo cliente de e-mail, nunca pelo servidor. Sem imagem, usa placeholder incorporado derivado do asset do web-app. Fabricante e potência não são inventados quando ausentes.
+O serviço não valida JWT de pessoas nem consulta cadastros para escolher destinatários.
 
-## Alertas
+| Com quem | Direção | Protocolo | Autenticação |
+|---|---|---|---|
+| `api-core` | chama este serviço | HTTP em `/emails` | chave de serviço e cabeçalho legado presentes no worker atual |
+| `api-auth` | cliente implementado chama este serviço | HTTP em `/emails` | cliente atual ainda envia `X-API-Key` |
+| SMTP | este serviço chama quando selecionado | SMTP | credenciais opcionais, TLS obrigatório fora de desenvolvimento |
+| Brevo | este serviço chama quando selecionado | HTTPS | `BREVO_API_KEY` no cabeçalho `api-key` |
+| Mailpit | captura local do envio SMTP | SMTP | sem credencial no compose local |
+| `web-sandbox` | lê contrato pelo navegador no QA | HTTP com CORS | contrato sem chave, operações de e-mail exigem chave de serviço |
 
-`alerts/` recebe o webhook do Grafana e o entrega a três canais, sem tocar nos modelos transacionais. `alerts.schema.ts` lê o payload com schema tolerante (campos extras são ignorados, ao contrário de `/emails`) e exige os rótulos que as regras de alerta carregam (`alert_id`, `priority`, `service_name`, `deployment_environment`); os valores só aceitam identificadores simples porque entram em rótulos do Jira e em consultas LogQL/TraceQL dos links. `alerts.model.ts` transforma cada alerta em um incidente: chave estável (SHA-1 de alerta, serviço e ambiente), prioridade P1 a P5 mapeada para o nome da prioridade do Jira, tags, horários e links. Os links são montados com `ALERT_GRAFANA_URL` e um caminho `/d/...` validado, nunca copiados do payload. `alerts.content.ts` e `adf.ts` produzem os textos em pt-BR e o corpo do ticket em ADF, sempre em nós de texto, sem interpretar marcação.
+As rotas aceitam os chamadores `api-core` e `api-auth` em ambas as operações. As chaves configuradas têm de 32 a 256 caracteres e são comparadas após hash com `timingSafeEqual`. Sem chave válida, o pedido é recusado. O padrão compartilhado está em [SERVICE_TO_SERVICE_AUTH.md](https://github.com/Solierrr/docs-warehouse/blob/main/docs/flows/SERVICE_TO_SERVICE_AUTH.md).
 
-`incident.service.ts` guarda as regras do ticket e não tem estado próprio: o Jira é o estado, consultado por rótulo (`inc-key-…`, `esc-…`). `firing` cria ticket novo se o último do mesmo alerta, serviço e ambiente tem pelo menos `ALERT_MIN_INTERVAL_MIN` minutos e se houve menos de `ALERT_MAX_PER_24H` em 24 horas (no teto, só comenta no último), liga ao anterior e ao ticket da mesma escalada com `Relates`, e escreve "ocorrência nº N" com base nos últimos 30 dias. `resolved` só grava o campo "Fim do incidente" e comenta; o serviço nunca muda status nem fecha ticket. Falha ao ligar ou comentar depois de criar o ticket não falha a notificação (volta em `warnings`); falha ao consultar ou criar responde 503 para o Grafana tentar de novo.
+`EMAIL_API_KEY` mantém a compatibilidade com `X-API-Key`, identificando esse pedido como `api-core`. Quando `X-Service-Key` está presente, a guarda não tenta a chave legada se a nova chave falhar. O [cliente de conta](https://github.com/Solierrr/api-auth/blob/main/src/main/kotlin/com/solaria/auth/integration/email/EmailClient.kt) ainda depende do caminho legado. O [worker de convites](https://github.com/Solierrr/api-core/blob/main/src/main/java/com/solaria/persistence/service/execution/ProjectInvitationMailWorker.java) envia os dois cabeçalhos quando tem a chave nova, mas ainda exige sua configuração legada para iniciar. A retirada dessas dependências precisa de coordenação.
 
-`jira.client.ts` e `whatsapp.client.ts` usam `fetch` com timeout, sem seguir redirecionamentos, e os erros levam só a operação e o status HTTP: corpo do provedor e credenciais não chegam a logs nem a respostas. Ambos são injetáveis em `buildApp`, como o transporte de e-mail. `AlertEmail.tsx` reaproveita `EmailLayout`, `EmailText`, `EmailAction` e `DetailCard`; o e-mail de alerta existe só em pt-BR. O WhatsApp usa o template aprovado na Meta, com quatro variáveis de uma linha (prioridade, resumo, serviço e ambiente, link) e só envia alertas `firing`.
+## Renderização e validação
 
-`/ready` não consulta Jira nem WhatsApp: a falha de um canal de alerta não pode tirar do ar os e-mails transacionais. Cada rota `/alerts/*` tem `/preview`, que devolve o que seria enviado sem contato com o canal. O limite de corpo dessas rotas é 256 KiB, porque um grupo de alertas passa dos 16 KiB das rotas de e-mail. Cada canal liga só quando todas as suas variáveis existem; sem elas a rota responde 503 `CHANNEL_NOT_CONFIGURED`. A cadência (ticket a cada 35 minutos, e-mail a cada 1 h em P1 e 4 h em P2, WhatsApp só em P1) é do roteamento do Grafana, não deste serviço.
+O schema é estrito no objeto principal e em `data`. Campos desconhecidos, remetente próprio, HTML arbitrário e vários destinatários são recusados. A origem do `actionUrl` precisa coincidir exatamente com `EMAIL_ALLOWED_ORIGINS`, sem credenciais na URL. HTTP só é permitido em desenvolvimento. A validação de rota é feita por Zod, e o JSON Schema do OpenAPI é derivado dele.
 
-## Novo template
+O conteúdo fica nos arquivos de tradução deste serviço. O layout, os textos e os botões visuais vêm da entrada de e-mail da biblioteca em `vendor/`, sem importar o CSS de browser. Os componentes compilam estilos inline e usam a tipografia do kit. Os valores textuais são escapados pelo React.
 
-Os componentes usam classes Tailwind dentro do EmailLayout. O wrapper Tailwind do React Email compila essas classes para estilos inline, com tema vindo de @solaria.network/web-lib/tokens e unidades de spacing em pixels. Não carregar o CSS de browser da lib nos templates. O body, container e centro usam o token operational-surface (#fafafa).
+Imagens incorporadas aparecem como data URI na prévia. Nodemailer converte essas imagens em partes CID, e o transporte Brevo faz conversão equivalente em anexos internos. O payload público não aceita anexos. Uma imagem de modelo fornecida pelo chamador deve usar HTTPS sem credenciais e será buscada pelo cliente de e-mail, não pelo servidor deste serviço.
 
-1. Adicionar nome e validação em email.schema.ts.
-2. Adicionar textos nos três idiomas em templates/email.content.ts.
-3. Reutilizar EmailLayout/EmailText/EmailAction de @solaria.network/web-lib/email e compor o corpo.
-4. Cobrir contrato, escaping e renderização; incluir exemplo Bruno.
+## Transportes e falhas
 
-Assunto: sempre "[finalidade] título", por exemplo `[Conta] Confirmação de e-mail` ou `[Alerta: P2] api-core em ambiente produtivo: resumo`. A finalidade fica em `purpose` de cada modelo em `email.translations.json` (Conta, Convite, Cadastro, Modelo, Empresa, Alerta) e o título é o mesmo que aparece no topo do e-mail. O aviso operacional monta a finalidade com a prioridade (`Alerta: P2`, ou `Alerta resolvido: P2`). Um teste fixa o formato de todos os modelos nos três idiomas.
+SMTP usa limites de conexão e saudação de cinco segundos e socket de dez segundos. Fora de desenvolvimento, exige STARTTLS quando não foi selecionado TLS direto. Leitura de arquivos e URLs pelo transporte está desativada.
 
-Padrão visual dos modelos: o corpo é só texto. Nada de bullets feitos com `div`, espaçamento entre palavras ou blocos para montar listas; cada informação é um parágrafo (`EmailText`), como em `Projeto: X` ou `1. Abrir o dashboard.`. As exceções autorizadas são o cartão que contém uma imagem (o modelo solar e a logo da empresa, via `DetailCard`) e o botão centralizado. Rótulos nunca em caixa alta nem com letras espaçadas. Um teste (`plain-text.test.ts`) renderiza todos os exemplos nos três idiomas e falha se aparecer `text-transform: uppercase` ou `letter-spacing`. 5. Todo template novo entra na galeria: criar o exemplo em `assets/mocks/emails/<template>.json` (o gerador lê um por template) e o ícone em `gallery/Gallery.tsx`. Imagens de exemplo vêm do `mocks-warehouse` e ficam em `assets/mocks/images/`; a galeria as publica em `/images/`.
+O transporte Brevo faz `POST` para a API transacional, com timeout de dez segundos e redirecionamento recusado. Uma resposta não bem-sucedida ou sem `messageId` é falha. O código não faz retry. `/ready` usa `verify` do transporte, que no Brevo consulta um relatório agregado por HTTPS sem enviar mensagem.
 
-O template `operational-alert` é o aviso operacional da plataforma: quem manda (o `worker-alerts`) envia o resumo, o impacto e os primeiros passos já prontos, e o template só aplica o layout e traduz os rótulos. O assunto é montado dos dados (`[P2] core (prod): resumo`, com `[RESOLVIDO]` quando o alerta volta). A origem do `actionUrl` (o dashboard do Grafana) precisa estar em `EMAIL_ALLOWED_ORIGINS`.
+O envio é síncrono. Uma falha após aceite pelo provedor pode deixar o resultado incerto para o chamador, e repetir pode duplicar a mensagem. Não há fila, idempotência ou confirmação de entrega neste serviço. O fluxo de convite completo está em [PROJECT_INVITE_EMAIL.md](https://github.com/Solierrr/docs-warehouse/blob/main/docs/flows/PROJECT_INVITE_EMAIL.md). O worker do cadastro central possui suas próprias tentativas, separadas da decisão ainda aberta para este serviço. <!-- PENDENTE: 4 -->
 
-Não gera tokens, consulta usuários ou decide permissões. Usar rede interna e HTTPS para chamadas remotas; cada servidor chamador usa a própria chave. Fila durável, deduplicação, identidade por consumidor e entrega confirmada exigem evolução explícita. Não há fila em memória fingindo persistência.
+## Dados e observabilidade
+
+A main não tem driver, schema nem conexão com o MongoDB, e a coleção `email_deliveries` é uma decisão registrada, ainda sem implementação, por isso esta documentação não publica um modelo de banco.
+
+Os logs registram o método, o caminho sem query, o modelo, o identificador da mensagem e os códigos de falha, ocultando os headers e o corpo, e o erro HTTP traz o `requestId` sem detalhes do provedor. O código analisado não tem instrumentação OpenTelemetry.
+
+`/health` informa processo e versão de `package.json`. `/ready` limita a espera pela verificação do transporte a dois segundos e retorna apenas `UP` ou `DOWN`. Esse limite não cancela necessariamente a operação interna do transporte. Swagger e contrato usam a mesma versão do pacote, mantida pelo release-please.
+
+## Alteração dos modelos
+
+Uma mudança de modelo passa pelo schema, pelos textos dos três idiomas, pela composição visual e pelos exemplos Bruno. Os testes existentes cobrem validação, escape de texto, renderização, contrato HTTP, configuração e transporte Brevo com chamadas substituídas por mocks.
+
+A referência analisada é a main em [`601b936e`](https://github.com/Solierrr/api-email/commit/601b936e9d9e0553634568e9b2d8260c22357b03), conferida em 2026-10-30.
