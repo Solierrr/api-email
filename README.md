@@ -32,7 +32,6 @@ Os serviços chamadores fornecem o destinatário e os dados do modelo. Fastify v
 - [DEPLOY.md](./docs/DEPLOY.md), ambientes, configuração e publicação.
 - [STATUS.md](./docs/STATUS.md), limitações e diferenças em relação ao levantamento anterior.
 - [Fluxos](./flows/), prévia e envio da mensagem.
-- [PENDENCIAS.md](./PENDENCIAS.md), dúvidas de configuração e decisões ainda abertas.
 
 ## Contribuindo
 
